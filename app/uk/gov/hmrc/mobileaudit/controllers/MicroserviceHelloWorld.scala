@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.mobileaudit.controllers
 
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.play.bootstrap.controller.BackendBaseController
 
 import scala.concurrent.Future
 
 @Singleton()
-class MicroserviceHelloWorld(override val controllerComponents: ControllerComponents) extends BackendBaseController {
+class MicroserviceHelloWorld @Inject()(override val controllerComponents: ControllerComponents) extends BackendBaseController {
 
   def hello() = Action.async { implicit request =>
     Future.successful(Ok("Hello world"))
