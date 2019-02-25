@@ -17,19 +17,18 @@
 package uk.gov.hmrc.mobileaudit.controllers
 
 import org.scalatest.{Matchers, WordSpec}
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-class MicroserviceHelloWorldControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
+class MicroserviceHelloWorldControllerSpec extends WordSpec with Matchers {
 
   val fakeRequest = FakeRequest("GET", "/")
 
   "GET /" should {
     "return 200" in {
       val controller = new MicroserviceHelloWorld(stubControllerComponents())
-      val result = controller.hello()(fakeRequest)
+      val result     = controller.hello()(fakeRequest)
       status(result) shouldBe Status.OK
     }
   }
