@@ -28,31 +28,22 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class ExecutorResponse(
-  name:         String,
-  responseData: Option[JsValue] = None,
-  cacheTime:    Option[Long] = None,
-  failure:      Option[Boolean] = None,
-  timeout:      Option[Boolean] = None)
+case class ExecutorResponse(name: String, responseData: Option[JsValue] = None, failure: Option[Boolean] = None, timeout: Option[Boolean] = None)
 
 sealed trait Executor[T >: ExecutorResponse] {
   val executionType: String
-  val executorName:  String
-  val cacheTime:     Option[Long]
 
   def execute(cacheTime: Option[Long], data: Option[JsValue], nino: String, journeyId: Option[String])(
     implicit hc:         HeaderCarrier,
     ex:                  ExecutionContext): Future[Option[T]]
 }
 
-trait EventExecutor extends Executor[ExecutorResponse]
-
 case class AuditEventExecutor(auditConnector: AuditConnector, logger: LoggerLike = Logger) {
   val executorName: String = "ngc-audit-event"
 
   private case class ValidData(auditType: String, extraDetail: Map[String, String], tags: Map[String, String])
 
-  def execute(cacheTime: Option[Long], data: Option[JsValue], nino: String, journeyId: Option[String])(
+  def execute(data: Option[JsValue], nino: String, journeyId: Option[String])(
     implicit hc:         HeaderCarrier,
     ex:                  ExecutionContext): Future[Option[ExecutorResponse]] = {
     val response = data
@@ -68,9 +59,10 @@ case class AuditEventExecutor(auditConnector: AuditConnector, logger: LoggerLike
           detail = hc.toAuditDetails(validData.extraDetail.toSeq: _*)
         )
 
-        val event: DataEvent = readGeneratedAt(data, defaultEvent.eventId)
-          .map(generatedAt => defaultEvent.copy(generatedAt = new org.joda.time.DateTime(generatedAt.toInstant(ZoneOffset.UTC).toEpochMilli)))
-          .getOrElse(defaultEvent)
+        val event: DataEvent =
+          readGeneratedAt(data, defaultEvent.eventId)
+            .map(generatedAt => defaultEvent.copy(generatedAt = new org.joda.time.DateTime(generatedAt.toInstant(ZoneOffset.UTC).toEpochMilli)))
+            .getOrElse(defaultEvent)
 
         auditConnector.sendEvent(event)
         ExecutorResponse(executorName, failure = Some(false))
