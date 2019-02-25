@@ -1,7 +1,19 @@
 
 # mobile-audit
 
-This is a placeholder README.md for a new repository
+This provides an api that the mobile apps can use to send audit messages to the platform.
+
+(This service replaced functionality that used to be provided by `native-apps-api-orchestration`)
+
+The following services are exposed:
+
+API
+---
+
+| *Task* | *Supported Methods* | *Description* |
+|--------|----|----|
+| ```/``` | POST | Send an audit message to the platform. [More...](docs/audit.md) |
+
 
 ### License
 
