@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.mobileaudit.controllers
 
-import java.time.{LocalDateTime, ZoneOffset, ZonedDateTime}
+import java.time.{LocalDateTime, ZoneOffset}
 
 import play.api.libs.json.Json.parse
 import play.api.libs.json._
@@ -30,6 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class ExecutorResponse(name: String, responseData: Option[JsValue] = None, failure: Option[Boolean] = None, timeout: Option[Boolean] = None)
 
+@deprecated("This is the old code, to be deleted when we're happy that the new code has replicated it correctly", "Feb 2019")
 case class AuditEventExecutor(auditConnector: AuditConnector, logger: LoggerLike = Logger) {
   val executorName: String = "ngc-audit-event"
 
@@ -67,8 +68,6 @@ case class AuditEventExecutor(auditConnector: AuditConnector, logger: LoggerLike
 
     Future.successful(Some(response))
   }
-
-
 
   private def validate(data: JsValue): Option[ValidData] = {
     val maybeAuditType:            Option[String]              = (data \ "auditType").asOpt[String]

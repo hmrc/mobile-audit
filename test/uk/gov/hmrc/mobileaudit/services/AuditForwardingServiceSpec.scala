@@ -17,6 +17,7 @@
 package uk.gov.hmrc.mobileaudit.services
 
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.auth.core.authorise.Predicate
@@ -29,7 +30,7 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuditForwardingServiceSpec extends WordSpec with Matchers with MockFactory {
+class AuditForwardingServiceSpec extends WordSpec with Matchers with MockFactory with ScalaFutures {
 
   val auditData = IncomingEvent("test", IncomingEventData("audit type", None, Map(), None))
 
@@ -53,7 +54,7 @@ class AuditForwardingServiceSpec extends WordSpec with Matchers with MockFactory
 
       val service = new AuditForwardingServiceImpl(auditConnector, authConnector)
       val result  = service.forwardAuditEvent(auditData)(HeaderCarrier())
-      result shouldBe AuditResult.Success
+      result.futureValue shouldBe an[AuditForwarded]
     }
   }
 
