@@ -38,16 +38,8 @@ trait AuditForwardingService {
   def forwardAuditEvent(incomingEvent: IncomingEvent)(implicit hc: HeaderCarrier): Future[AuditOutcome]
 }
 
-class AuditForwardingServiceImpl @Inject()(auditConnector: AuditConnector, authConnector: AuthConnector)(
-  implicit val ec:                                         ExecutionContext
-) extends AuditForwardingService {
-
-  override def forwardAuditEvent(incomingEvent: IncomingEvent)(implicit hc: HeaderCarrier): Future[AuditOutcome] =
-    withNinoFromAuth { ninoFromAuth =>
-      auditConnector.sendEvent(buildEvent(ninoFromAuth, incomingEvent, hc)).map(AuditForwarded)
-    }
-
-  private[services] def buildEvent(nino: String, incomingEvent: IncomingEvent, hc: HeaderCarrier): DataEvent = {
+object AuditForwardingService {
+  def buildEvent(nino: String, incomingEvent: IncomingEvent, hc: HeaderCarrier): DataEvent = {
     val tags        = incomingEvent.data.tags.getOrElse(Map())
     val generatedAt = incomingEvent.data.generatedAt.map(d => new DateTime(d.toInstant.toEpochMilli)).getOrElse(DateTime.now())
 
@@ -59,6 +51,16 @@ class AuditForwardingServiceImpl @Inject()(auditConnector: AuditConnector, authC
       generatedAt = generatedAt
     )
   }
+}
+
+class AuditForwardingServiceImpl @Inject()(auditConnector: AuditConnector, authConnector: AuthConnector)(
+  implicit val ec:                                         ExecutionContext
+) extends AuditForwardingService {
+
+  override def forwardAuditEvent(incomingEvent: IncomingEvent)(implicit hc: HeaderCarrier): Future[AuditOutcome] =
+    withNinoFromAuth { ninoFromAuth =>
+      auditConnector.sendEvent(AuditForwardingService.buildEvent(ninoFromAuth, incomingEvent, hc)).map(AuditForwarded)
+    }
 
   private def withNinoFromAuth(f: String => Future[AuditOutcome])(implicit hc: HeaderCarrier): Future[AuditOutcome] =
     authConnector
