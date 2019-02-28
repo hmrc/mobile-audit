@@ -4,7 +4,7 @@ Send an audit message to the platform.
   
 * **URL**
 
-  `/mobile-audit`
+  `/mobile-audit/audit-event`
 
 * **Method:**
   
@@ -20,7 +20,9 @@ Send an audit message to the platform.
      
 *  **JSON**
 
-The contents of the audit message. The NINO of the user who is logged-in to the app will be added to the audit message before it is sent
+The contents of the audit message. The message will be forwarded to the platform audit service. 
+
+The NINO of the user who is logged-in to the app will be added to the audit message before it is sent
 to the platform audit service.
 
 ```json

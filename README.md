@@ -12,7 +12,8 @@ API
 
 | *Task* | *Supported Methods* | *Description* |
 |--------|----|----|
-| ```/``` | POST | Send an audit message to the platform. [More...](docs/audit.md) |
+| ```/audit-event``` | POST | Send a single audit message to the platform. [More...](docs/audit-event.md) |
+| ```/audit-events``` | POST | Send several audit messages to the platform. [More...](docs/audit-events.md) |
 
 
 ### License

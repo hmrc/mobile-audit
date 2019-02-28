@@ -18,9 +18,7 @@ package uk.gov.hmrc.mobileaudit.services
 import com.google.inject.ImplementedBy
 import javax.inject.Inject
 import org.joda.time.DateTime
-import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
-import uk.gov.hmrc.auth.core.retrieve.Retrievals
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, NoActiveSession}
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
@@ -35,19 +33,26 @@ case class AuditForwarded(auditResult: AuditResult) extends AuditOutcome
 
 @ImplementedBy(classOf[AuditForwardingServiceImpl])
 trait AuditForwardingService {
-  def forwardAuditEvent(incomingEvent: IncomingEvent)(implicit hc: HeaderCarrier): Future[AuditOutcome]
+  def forwardAuditEvent(nino: String, incomingEvent: IncomingEvent)(implicit hc: HeaderCarrier): Future[AuditResult]
 }
 
 object AuditForwardingService {
+  val transactionNameKey     = "transactionName"
+  val ninoKey                = "nino"
+  val pathKey                = "path"
+  val defaultTransactionName = "explicitAuditEvent"
+
   def buildEvent(nino: String, incomingEvent: IncomingEvent, hc: HeaderCarrier): DataEvent = {
     val tags        = incomingEvent.data.tags.getOrElse(Map())
     val generatedAt = incomingEvent.data.generatedAt.map(d => new DateTime(d.toInstant.toEpochMilli)).getOrElse(DateTime.now())
+    val transactionName: String = tags.getOrElse(transactionNameKey, defaultTransactionName)
+    val path:            String = tags.getOrElse(pathKey, incomingEvent.data.auditType)
 
     DataEvent(
       "native-apps",
       incomingEvent.data.auditType,
-      tags        = hc.toAuditTags(tags.getOrElse("transactionName", "explicitAuditEvent")),
-      detail      = incomingEvent.data.detail ++ Map("nino" -> nino),
+      tags        = hc.toAuditTags(transactionName, path),
+      detail      = incomingEvent.data.detail ++ Map(ninoKey -> nino),
       generatedAt = generatedAt
     )
   }
@@ -57,20 +62,6 @@ class AuditForwardingServiceImpl @Inject()(auditConnector: AuditConnector, authC
   implicit val ec:                                         ExecutionContext
 ) extends AuditForwardingService {
 
-  override def forwardAuditEvent(incomingEvent: IncomingEvent)(implicit hc: HeaderCarrier): Future[AuditOutcome] =
-    withNinoFromAuth { ninoFromAuth =>
-      auditConnector.sendEvent(AuditForwardingService.buildEvent(ninoFromAuth, incomingEvent, hc)).map(AuditForwarded)
-    }
-
-  private def withNinoFromAuth(f: String => Future[AuditOutcome])(implicit hc: HeaderCarrier): Future[AuditOutcome] =
-    authConnector
-      .authorise(EmptyPredicate, Retrievals.nino)
-      .flatMap {
-        case Some(nino) => f(nino)
-        case None       => Future.successful(NotAuthorized("Authorization failure [user is not enrolled for NI]"))
-      }
-      .recover {
-        case e: NoActiveSession        => NotAuthorized(s"Authorisation failure [${e.reason}]")
-        case e: AuthorisationException => NotAllowed(s"Authorisation failure [${e.reason}]")
-      }
+  override def forwardAuditEvent(nino: String, incomingEvent: IncomingEvent)(implicit hc: HeaderCarrier): Future[AuditResult] =
+    auditConnector.sendEvent(AuditForwardingService.buildEvent(nino, incomingEvent, hc))
 }

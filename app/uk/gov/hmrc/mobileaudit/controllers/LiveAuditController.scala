@@ -17,14 +17,18 @@
 package uk.gov.hmrc.mobileaudit.controllers
 
 import akka.stream.Materializer
+import cats.implicits._
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, ControllerComponents, Result}
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
+import uk.gov.hmrc.auth.core.retrieve.Retrievals
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mobileaudit.services._
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.play.bootstrap.controller.{BackendBaseController, BackendHeaderCarrierProvider}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 @Singleton()
 class LiveAuditController @Inject()(
   override val controllerComponents: ControllerComponents,
@@ -49,17 +53,40 @@ class LiveAuditController @Inject()(
     * reduced this action to just calling the service, and there is no unit test for it. The integration test will
     * provide coverage.
     */
-  def audit(journeyId: Option[String]): Action[IncomingEvent] =
+  def auditOne(journeyId: Option[String]): Action[IncomingEvent] =
     Action.async(controllerComponents.parsers.json[IncomingEvent]) { implicit request =>
-      auditForwardingService.forwardAuditEvent(request.body).map(decodeOutcome)
+      withNinoFromAuth { ninoFromAuth =>
+        auditForwardingService
+          .forwardAuditEvent(ninoFromAuth, request.body)
+          .map(_ => NoContent)
+      }
     }
 
-  private[controllers] def decodeOutcome(outcome: AuditOutcome): Result =
-    outcome match {
-      case NotAuthorized(msg)                          => Unauthorized(msg)
-      case NotAllowed(msg)                             => Forbidden(msg)
-      case AuditForwarded(AuditResult.Disabled)        => InternalServerError("Audit logging is disabled!")
-      case AuditForwarded(AuditResult.Failure(msg, _)) => InternalServerError(msg)
-      case AuditForwarded(AuditResult.Success)         => NoContent
+  def auditMany(journeyId: Option[String]): Action[List[IncomingEvent]] =
+    Action.async(controllerComponents.parsers.json[List[IncomingEvent]]) { implicit request =>
+      withNinoFromAuth { ninoFromAuth =>
+        request.body
+          .traverse(auditForwardingService.forwardAuditEvent(ninoFromAuth, _))
+          .map(_ => NoContent)
+      }
+    }
+
+  private def withNinoFromAuth(f: String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =
+    authConnector
+      .authorise(EmptyPredicate, Retrievals.nino)
+      .flatMap {
+        case Some(nino) => f(nino)
+        case None       => Future.successful(Unauthorized("Authorization failure [user is not enrolled for NI]"))
+      }
+      .recover {
+        case e: NoActiveSession        => Unauthorized(s"Authorisation failure [${e.reason}]")
+        case e: AuthorisationException => Forbidden(s"Authorisation failure [${e.reason}]")
+      }
+
+  private[controllers] def decodeOutcome(auditResult: AuditResult): Result =
+    auditResult match {
+      case AuditResult.Disabled        => InternalServerError("Audit logging is disabled!")
+      case AuditResult.Failure(msg, _) => InternalServerError(msg)
+      case AuditResult.Success         => NoContent
     }
 }
