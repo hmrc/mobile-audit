@@ -49,12 +49,13 @@ class AuditForwardingServiceSpec extends WordSpec with Matchers with MockFactory
     .expects(*, *, *, *)
     .returning(Future.successful(Some("nino")))
 
-  "POST /" should {
-    "return 204" in {
-
+  "Forwarding a valid audit event" should {
+    "return AuditForwarded" in {
       val service = new AuditForwardingServiceImpl(auditConnector, authConnector)
-      val result  = service.forwardAuditEvent(auditData)(HeaderCarrier())
-      result.futureValue shouldBe an[AuditForwarded]
+      val result  = service.forwardAuditEvent(auditData)(HeaderCarrier()).futureValue
+
+      result                                          shouldBe an[AuditForwarded]
+      result.asInstanceOf[AuditForwarded].auditResult shouldBe AuditResult.Success
     }
   }
 
