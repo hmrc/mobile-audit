@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.mobileaudit.controllers
 
-import java.time.{LocalDateTime, ZoneOffset}
+import java.time.{LocalDateTime, ZoneOffset, ZonedDateTime}
 
 import play.api.libs.json.Json.parse
 import play.api.libs.json._
@@ -30,49 +30,45 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class ExecutorResponse(name: String, responseData: Option[JsValue] = None, failure: Option[Boolean] = None, timeout: Option[Boolean] = None)
 
-sealed trait Executor[T >: ExecutorResponse] {
-  val executionType: String
-
-  def execute(cacheTime: Option[Long], data: Option[JsValue], nino: String, journeyId: Option[String])(
-    implicit hc:         HeaderCarrier,
-    ex:                  ExecutionContext): Future[Option[T]]
-}
-
 case class AuditEventExecutor(auditConnector: AuditConnector, logger: LoggerLike = Logger) {
   val executorName: String = "ngc-audit-event"
 
   private case class ValidData(auditType: String, extraDetail: Map[String, String], tags: Map[String, String])
 
   def execute(data: Option[JsValue], nino: String, journeyId: Option[String])(
-    implicit hc:         HeaderCarrier,
-    ex:                  ExecutionContext): Future[Option[ExecutorResponse]] = {
-    val response = data
-      .flatMap(validate)
-      .map { validData =>
-        val transactionName: String = validData.tags.getOrElse("transactionName", "explicitAuditEvent")
-        val path:            String = validData.tags.getOrElse("path", validData.auditType)
+    implicit hc:    HeaderCarrier,
+    ex:             ExecutionContext
+  ): Future[Option[ExecutorResponse]] = {
+    val response =
+      data
+        .flatMap(validate)
+        .map { validData =>
+          val transactionName: String = validData.tags.getOrElse("transactionName", "explicitAuditEvent")
+          val path:            String = validData.tags.getOrElse("path", validData.auditType)
 
-        val defaultEvent = DataEvent(
-          "native-apps",
-          validData.auditType,
-          tags   = hc.toAuditTags(transactionName, path),
-          detail = hc.toAuditDetails(validData.extraDetail.toSeq: _*)
+          val defaultEvent = DataEvent(
+            "native-apps",
+            validData.auditType,
+            tags   = hc.toAuditTags(transactionName, path),
+            detail = hc.toAuditDetails(validData.extraDetail.toSeq: _*)
+          )
+
+          val event: DataEvent =
+            readGeneratedAt(data, defaultEvent.eventId)
+              .map(generatedAt => defaultEvent.copy(generatedAt = new org.joda.time.DateTime(generatedAt.toInstant(ZoneOffset.UTC).toEpochMilli)))
+              .getOrElse(defaultEvent)
+
+          auditConnector.sendEvent(event)
+          ExecutorResponse(executorName, failure = Some(false))
+        }
+        .getOrElse(
+          ExecutorResponse(executorName, responseData = Some(parse("""{"error": "Bad Request"}""")), failure = Some(true))
         )
-
-        val event: DataEvent =
-          readGeneratedAt(data, defaultEvent.eventId)
-            .map(generatedAt => defaultEvent.copy(generatedAt = new org.joda.time.DateTime(generatedAt.toInstant(ZoneOffset.UTC).toEpochMilli)))
-            .getOrElse(defaultEvent)
-
-        auditConnector.sendEvent(event)
-        ExecutorResponse(executorName, failure = Some(false))
-      }
-      .getOrElse(
-        ExecutorResponse(executorName, responseData = Some(parse("""{"error": "Bad Request"}""")), failure = Some(true))
-      )
 
     Future.successful(Some(response))
   }
+
+
 
   private def validate(data: JsValue): Option[ValidData] = {
     val maybeAuditType:            Option[String]              = (data \ "auditType").asOpt[String]
