@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.mobileaudit.services
+import com.google.inject.ImplementedBy
 import javax.inject.Inject
 import org.joda.time.DateTime
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, NoActiveSession}
@@ -32,6 +33,7 @@ case class NotAuthorized(msg:          String) extends AuditOutcome
 case class NotAllowed(msg:             String) extends AuditOutcome
 case class AuditForwarded(auditResult: AuditResult) extends AuditOutcome
 
+@ImplementedBy(classOf[AuditForwardingServiceImpl])
 trait AuditForwardingService {
   def forwardAuditEvent(incomingEvent: IncomingEvent)(implicit hc: HeaderCarrier): Future[AuditOutcome]
 }
