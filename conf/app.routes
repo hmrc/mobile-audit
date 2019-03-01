@@ -1,5 +1,5 @@
 # microservice specific routes
 
-POST        /audit-event         uk.gov.hmrc.mobileaudit.controllers.LiveAuditController.auditOne(journeyId :Option[String])
+POST        /audit-event         uk.gov.hmrc.mobileaudit.controllers.LiveAuditController.auditOneEvent(journeyId :Option[String])
 
-POST        /audit-events        uk.gov.hmrc.mobileaudit.controllers.LiveAuditController.auditMany(journeyId :Option[String])
+POST        /audit-events        uk.gov.hmrc.mobileaudit.controllers.LiveAuditController.auditManyEvents(journeyId :Option[String])

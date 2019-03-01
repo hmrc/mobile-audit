@@ -14,25 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.mobileaudit.services
+package uk.gov.hmrc.mobileaudit.config
+import com.google.inject.AbstractModule
+import com.google.inject.name.Names.named
+import javax.inject.Inject
+import play.api.{Configuration, Environment}
 
-import java.time.ZonedDateTime
+class GuiceModule @Inject()(environment: Environment, configuration: Configuration) extends AbstractModule{
+  override def configure(): Unit = {
+    bindConfigString("auditSource", "auditSource")
+  }
 
-import play.api.libs.json.{Json, OFormat}
-
-case class IncomingEventData(
-  auditType:   String,
-  generatedAt: Option[ZonedDateTime],
-  detail:      Map[String, String],
-  tags:        Option[Map[String, String]]
-)
-
-object IncomingEventData {
-  implicit val formats: OFormat[IncomingEventData] = Json.format
-}
-
-case class IncomingEvent(name: String, data: IncomingEventData)
-
-object IncomingEvent {
-  implicit val formats: OFormat[IncomingEvent] = Json.format
+  private def bindConfigString(name: String, path: String): Unit =
+    bindConstant().annotatedWith(named(name)).to(configuration.underlying.getString(path))
 }

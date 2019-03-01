@@ -19,44 +19,16 @@ package uk.gov.hmrc.mobileaudit.services
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FreeSpecLike, Matchers, OptionValues}
-import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.config.AuditingConfig
-import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import uk.gov.hmrc.play.audit.model.DataEvent
+import uk.gov.hmrc.mobileaudit.controllers.{DataEventBuilder, IncomingEvent, IncomingEventData}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
-
-class AuditForwardingServiceSpec extends FreeSpecLike with Matchers with MockFactory with ScalaFutures with OptionValues {
-
-  val auditData = IncomingEvent("test", IncomingEventData("audit type", None, Map(), None))
-
-  val auditConnector: AuditConnector = new AuditConnector {
-    override def auditingConfig: AuditingConfig = AuditingConfig(None, enabled = true, "source")
-
-    override def sendEvent(event: DataEvent)(implicit hc: HeaderCarrier = HeaderCarrier(), ec: ExecutionContext): Future[AuditResult] =
-      Future.successful(AuditResult.Success)
-  }
-
-  val authConnector: AuthConnector =
-    mock[AuthConnector]
-
-  "Forwarding a valid audit event" - {
-    "should return AuditForwarded" in {
-      val service = new AuditForwardingServiceImpl(auditConnector, authConnector)
-      val result  = service.forwardAuditEvent("nino", auditData)(HeaderCarrier()).futureValue
-
-      result shouldBe AuditResult.Success
-    }
-  }
-
+class DataEventBuilderSpec extends FreeSpecLike with Matchers with MockFactory with ScalaFutures with OptionValues {
   "when building a DataEvent" - {
-    import AuditForwardingService._
+    import uk.gov.hmrc.mobileaudit.controllers.DataEventBuilder._
 
     "and no tag for the path is provided" - {
       val incomingEvent = IncomingEvent("event", IncomingEventData("audit-type", None, Map(), None))
-      val dataEvent     = buildEvent("nino-value", incomingEvent, HeaderCarrier())
+      val dataEvent     = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
       "then the path tag should be set to the incoming audit type" in {
         dataEvent.tags.get(pathKey) shouldBe Some(incomingEvent.data.auditType)
       }
@@ -66,7 +38,7 @@ class AuditForwardingServiceSpec extends FreeSpecLike with Matchers with MockFac
       val pathValue     = "path-value"
       val tags          = Map(pathKey -> pathValue)
       val incomingEvent = IncomingEvent("event", IncomingEventData("audit-type", None, Map(), Some(tags)))
-      val dataEvent     = buildEvent("nino-value", incomingEvent, HeaderCarrier())
+      val dataEvent     = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
 
       "then it should be copied to the DataEvent" in {
         dataEvent.tags.get(pathKey) shouldBe Some(pathValue)
@@ -75,9 +47,9 @@ class AuditForwardingServiceSpec extends FreeSpecLike with Matchers with MockFac
 
     "and no tag for the transactionName is provided" - {
       val incomingEvent = IncomingEvent("event", IncomingEventData("audit-type", None, Map(), None))
-      val dataEvent     = buildEvent("nino-value", incomingEvent, HeaderCarrier())
+      val dataEvent     = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
       "then the transactionName should be set to the default" in {
-        dataEvent.tags.get(transactionNameKey) shouldBe Some(AuditForwardingService.defaultTransactionName)
+        dataEvent.tags.get(transactionNameKey) shouldBe Some(DataEventBuilder.defaultTransactionName)
       }
     }
 
@@ -85,7 +57,7 @@ class AuditForwardingServiceSpec extends FreeSpecLike with Matchers with MockFac
       val transactionNameValue = "transaction-name-value"
       val tags                 = Map(transactionNameKey -> transactionNameValue)
       val incomingEvent        = IncomingEvent("event", IncomingEventData("audit-type", None, Map(), Some(tags)))
-      val dataEvent            = buildEvent("nino-value", incomingEvent, HeaderCarrier())
+      val dataEvent            = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
 
       "then it should be copied to the DataEvent" in {
         dataEvent.tags.get(transactionNameKey) shouldBe Some(transactionNameValue)
@@ -96,7 +68,7 @@ class AuditForwardingServiceSpec extends FreeSpecLike with Matchers with MockFac
       val detail            = Map(ninoKey -> "bogus-nino-value")
       val expectedNinoValue = "expected-nino-value"
       val incomingEvent     = IncomingEvent("event", IncomingEventData("audit-type", None, detail, None))
-      val dataEvent         = buildEvent(expectedNinoValue, incomingEvent, HeaderCarrier())
+      val dataEvent         = buildEvent("audit-source", expectedNinoValue, incomingEvent, HeaderCarrier())
       "should be replaced with the nino value supplied to the buildEvent function" in {
         dataEvent.detail.get(ninoKey) shouldBe Some(expectedNinoValue)
       }
@@ -112,7 +84,7 @@ class AuditForwardingServiceSpec extends FreeSpecLike with Matchers with MockFac
         otherKey2          -> "other-value-2"
       )
       val incomingEvent = IncomingEvent("event", IncomingEventData("audit-type", None, Map(), Some(tags)))
-      val dataEvent     = buildEvent("nino-value", incomingEvent, HeaderCarrier())
+      val dataEvent     = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
 
       dataEvent.tags.get(otherKey1) shouldBe None
       dataEvent.tags.get(otherKey2) shouldBe None
