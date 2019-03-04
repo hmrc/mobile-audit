@@ -11,11 +11,6 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 
 import scala.collection.JavaConverters._
 
-/**
-  * The unit tests check that various forms of `IncomingEvent` are correctly translated the the
-  * equivalent `DataEvent`, so just do some basic sanity checks that the event that is sent matches
-  * the event we generated
-  */
 class AuditManyISpec extends BaseISpec with OptionValues {
   implicit val jodaDateReads: Reads[DateTime]  = play.api.libs.json.JodaReads.DefaultJodaDateTimeReads
   implicit val readDataEvent: Reads[DataEvent] = Json.reads
