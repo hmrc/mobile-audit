@@ -26,17 +26,17 @@ object DataEventBuilder {
   val pathKey                = "path"
   val defaultTransactionName = "explicitAuditEvent"
 
-  def buildEvent(auditSource:String, nino: String, incomingEvent: IncomingEvent, hc: HeaderCarrier): DataEvent = {
-    val tags        = incomingEvent.data.tags.getOrElse(Map())
-    val generatedAt = incomingEvent.data.generatedAt.map(d => new DateTime(d.toInstant.toEpochMilli)).getOrElse(DateTime.now())
+  def buildEvent(auditSource:String, nino: String, incomingEvent: IncomingEventData, hc: HeaderCarrier): DataEvent = {
+    val tags        = incomingEvent.tags.getOrElse(Map())
+    val generatedAt = incomingEvent.generatedAt.map(d => new DateTime(d.toInstant.toEpochMilli)).getOrElse(DateTime.now())
     val transactionName: String = tags.getOrElse(transactionNameKey, defaultTransactionName)
-    val path:            String = tags.getOrElse(pathKey, incomingEvent.data.auditType)
+    val path:            String = tags.getOrElse(pathKey, incomingEvent.auditType)
 
     DataEvent(
       auditSource,
-      incomingEvent.data.auditType,
+      incomingEvent.auditType,
       tags        = hc.toAuditTags(transactionName, path),
-      detail      = incomingEvent.data.detail ++ Map(ninoKey -> nino),
+      detail      = incomingEvent.detail ++ Map(ninoKey -> nino),
       generatedAt = generatedAt
     )
   }

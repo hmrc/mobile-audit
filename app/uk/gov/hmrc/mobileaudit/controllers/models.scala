@@ -31,8 +31,8 @@ object IncomingEventData {
   implicit val formats: OFormat[IncomingEventData] = Json.format
 }
 
-case class IncomingEvent(name: String, data: IncomingEventData)
-
-object IncomingEvent {
-  implicit val formats: OFormat[IncomingEvent] = Json.format
-}
+//case class IncomingEvent(name: String, data: IncomingEventData)
+//
+//object IncomingEvent {
+//  implicit val formats: OFormat[IncomingEvent] = Json.format
+//}
