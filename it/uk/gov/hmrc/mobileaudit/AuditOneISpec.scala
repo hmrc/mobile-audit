@@ -20,8 +20,8 @@ class AuditOneISpec extends BaseISpec with OptionValues {
   implicit val jodaDateReads: Reads[DateTime]  = play.api.libs.json.JodaReads.DefaultJodaDateTimeReads
   implicit val readDataEvent: Reads[DataEvent] = Json.reads
 
-  "a single event sent to /audit-one" - {
-    "should be forwarded to the audit service" in {
+  "when a single event sent to /audit-event" - {
+    "it should be forwarded to the audit service" in {
       val auditSource   = app.configuration.underlying.getString("auditSource")
       val auditType     = "audit-type"
       val testNino      = "AA100000Z"
