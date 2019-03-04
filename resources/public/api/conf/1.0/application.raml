@@ -1,0 +1,47 @@
+#%RAML 1.0
+---
+
+title: Mobile Audit
+version: 1.0
+protocols: [ HTTPS ]
+baseUri: https://api.service.hmrc.gov.uk/
+
+documentation:
+ - title: Overview
+   content: !include docs/overview.md
+ - title: Versioning
+   content: !include https://developer.service.hmrc.gov.uk/api-documentation/assets/common/docs/versioning.md
+ - title: Errors
+   content: !include https://developer.service.hmrc.gov.uk/api-documentation/assets/common/docs/errors.md
+
+mediaType: [ application/json, application/hal+json ]
+
+uses:
+  sec: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/securitySchemes.raml
+  headers: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/headers.raml
+  annotations: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/annotations.raml
+  types: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/types.raml
+
+/mobile-audit:
+  /audit-event:
+    post:
+      displayName: Send a single event to the tax platform for auditing
+      description: This endpoint receives a single auditing event and forwards it on to the auditing service.
+                   The NINO that is included in the forwarded audit event will be retrieved from the auth service
+                   using the authentication token on the request, so the event sent to this endpoint should not
+                   include a NINO.
+      (annotations.scope): "read:native-apps-api-orchestration"
+      securedBy: [ sec.oauth_2_0: { scopes: [ "read:native-apps-api-orchestration" ] } ]
+      responses:
+        204:
+  /audit-events:
+    post:
+      displayName: Send several events to the tax platform for auditing
+      description: This endpoint receives an array auditing event and forwards them on to the auditing service.
+                   The NINO that is included in the forwarded audit events will be retrieved from the auth service
+                   using the authentication token on the request, so the events sent to this endpoint should not
+                   include a NINO.
+      (annotations.scope): "read:native-apps-api-orchestration"
+      securedBy: [ sec.oauth_2_0: { scopes: [ "read:native-apps-api-orchestration" ] } ]
+      responses:
+        204:
