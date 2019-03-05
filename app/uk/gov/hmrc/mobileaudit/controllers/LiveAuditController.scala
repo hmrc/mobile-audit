@@ -46,10 +46,10 @@ class LiveAuditController @Inject()(
       withNinoFromAuth(forwardAuditEvent(_, request.body).map(_ => NoContent))
     }
 
-  def auditManyEvents(journeyId: Option[String]): Action[List[IncomingAuditEvent]] =
-    Action.async(controllerComponents.parsers.json[List[IncomingAuditEvent]]) { implicit request =>
+  def auditManyEvents(journeyId: Option[String]): Action[IncomingAuditEvents] =
+    Action.async(controllerComponents.parsers.json[IncomingAuditEvents]) { implicit request =>
       withNinoFromAuth { ninoFromAuth =>
-        request.body
+        request.body.events
           .traverse(forwardAuditEvent(ninoFromAuth, _))
           .map(_ => NoContent)
       }

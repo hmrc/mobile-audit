@@ -14,26 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.mobileaudit.controllers
+package uk.gov.hmrc.mobileaudit.schemas
 
-import java.time.ZonedDateTime
+import java.io.InputStream
 
-import play.api.libs.json.{Json, OFormat}
-
-case class IncomingAuditEvent(
-  auditType:       String,
-  generatedAt:     Option[ZonedDateTime],
-  transactionName: Option[String],
-  path:            Option[String],
-  detail:          Option[Map[String, String]]
-)
-
-object IncomingAuditEvent {
-  implicit val formats: OFormat[IncomingAuditEvent] = Json.format
-}
-
-case class IncomingAuditEvents(events: List[IncomingAuditEvent])
-
-object IncomingAuditEvents {
-  implicit val formats: OFormat[IncomingAuditEvents] = Json.format
+object Resources {
+  def withResource[R](resourceName: String, clazz: Class[_] = getClass)(f: InputStream => R): R = {
+    val inputStreamIfExists = Option(clazz.getResourceAsStream(resourceName))
+    inputStreamIfExists.map { inputStream =>
+      try {
+        f(inputStream)
+      }
+      finally {
+        inputStream.close()
+      }
+    }.getOrElse(sys.error(s"Could not find resource $resourceName"))
+  }
 }

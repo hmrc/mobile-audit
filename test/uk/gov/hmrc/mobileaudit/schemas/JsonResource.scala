@@ -14,26 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.mobileaudit.controllers
+package uk.gov.hmrc.mobileaudit.schemas
 
-import java.time.ZonedDateTime
+import play.api.libs.json.{JsValue, Json}
 
-import play.api.libs.json.{Json, OFormat}
+object JsonResource {
 
-case class IncomingAuditEvent(
-  auditType:       String,
-  generatedAt:     Option[ZonedDateTime],
-  transactionName: Option[String],
-  path:            Option[String],
-  detail:          Option[Map[String, String]]
-)
+  def loadResourceJson(resourceName: String): JsValue =
+    Resources.withResource(resourceName)(Json.parse)
 
-object IncomingAuditEvent {
-  implicit val formats: OFormat[IncomingAuditEvent] = Json.format
-}
-
-case class IncomingAuditEvents(events: List[IncomingAuditEvent])
-
-object IncomingAuditEvents {
-  implicit val formats: OFormat[IncomingAuditEvents] = Json.format
 }
