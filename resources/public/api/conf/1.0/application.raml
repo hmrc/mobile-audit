@@ -28,6 +28,7 @@ uses:
       body:
         application/json:
           type: !include schemas/event.json
+          example: !include examples/event.json
       displayName: Send a single event to the tax platform for auditing
       description: This endpoint receives a single auditing event and forwards it on to the auditing service.
                    The NINO that is included in the forwarded audit event will be retrieved from the auth service
@@ -42,8 +43,9 @@ uses:
       body:
         application/json:
           type: !include schemas/events.json
+          example: !include examples/events.json
       displayName: Send several events to the tax platform for auditing
-      description: This endpoint receives an array auditing event and forwards them on to the auditing service.
+      description: This endpoint receives an object containing an array of audit events and forwards them on to the auditing service.
                    The NINO that is included in the forwarded audit events will be retrieved from the auth service
                    using the authentication token on the request, so the events sent to this endpoint should not
                    include a NINO.

@@ -26,7 +26,16 @@ The NINO of the user who is logged-in to the app will be added to the audit mess
 to the platform audit service.
 
 ```json
-
+{
+  "auditType": "externalAuditEvent",
+  "generatedAt": "2019-03-05T11:03:30.825Z",
+  "transactionName": "transaction",
+  "path": "audit-path",
+  "detail": {
+    "extraDetail1": "value 1",
+    "extraDetail2": "value 2"
+  }
+}
 ```
 
 * **Success Response:**
