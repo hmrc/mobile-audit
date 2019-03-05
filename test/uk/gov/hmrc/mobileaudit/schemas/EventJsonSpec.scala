@@ -48,5 +48,4 @@ class EventJsonSpec extends FreeSpecLike with Matchers with SchemaMatchers {
       json should validateAgainstSchema(strictRamlEventsSchema)
     }
   }
-
 }
