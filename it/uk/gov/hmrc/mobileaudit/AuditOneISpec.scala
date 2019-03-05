@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.stubbing.ServeEvent
 import org.joda.time.DateTime
 import org.scalatest.OptionValues
 import play.api.libs.json._
-import uk.gov.hmrc.mobileaudit.controllers.IncomingEventData
+import uk.gov.hmrc.mobileaudit.controllers.IncomingAuditEvent
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 import uk.gov.hmrc.play.audit.model.DataEvent
@@ -25,7 +25,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val auditSource   = app.configuration.underlying.getString("auditSource")
       val auditType     = "audit-type"
       val testNino      = "AA100000Z"
-      val incomingEvent = IncomingEventData(auditType, None, Map(), None)
+      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, Map())
 
       AuthStub.userIsLoggedIn(testNino)
       AuditStub.respondToAuditWithNoBody

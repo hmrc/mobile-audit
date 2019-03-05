@@ -41,13 +41,13 @@ class LiveAuditController @Inject()(
     with BackendHeaderCarrierProvider
     with AuthorisedFunctions {
 
-  def auditOneEvent(journeyId: Option[String]): Action[IncomingEventData] =
-    Action.async(controllerComponents.parsers.json[IncomingEventData]) { implicit request =>
+  def auditOneEvent(journeyId: Option[String]): Action[IncomingAuditEvent] =
+    Action.async(controllerComponents.parsers.json[IncomingAuditEvent]) { implicit request =>
       withNinoFromAuth(forwardAuditEvent(_, request.body).map(_ => NoContent))
     }
 
-  def auditManyEvents(journeyId: Option[String]): Action[List[IncomingEventData]] =
-    Action.async(controllerComponents.parsers.json[List[IncomingEventData]]) { implicit request =>
+  def auditManyEvents(journeyId: Option[String]): Action[List[IncomingAuditEvent]] =
+    Action.async(controllerComponents.parsers.json[List[IncomingAuditEvent]]) { implicit request =>
       withNinoFromAuth { ninoFromAuth =>
         request.body
           .traverse(forwardAuditEvent(ninoFromAuth, _))
@@ -55,7 +55,7 @@ class LiveAuditController @Inject()(
       }
     }
 
-  def forwardAuditEvent(nino: String, incomingEvent: IncomingEventData)(implicit hc: HeaderCarrier): Future[AuditResult] =
+  def forwardAuditEvent(nino: String, incomingEvent: IncomingAuditEvent)(implicit hc: HeaderCarrier): Future[AuditResult] =
     auditConnector.sendEvent(DataEventBuilder.buildEvent(auditSource, nino, incomingEvent, hc))
 
   private def withNinoFromAuth(f: String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =

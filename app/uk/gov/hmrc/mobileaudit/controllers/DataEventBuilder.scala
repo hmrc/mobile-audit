@@ -21,22 +21,23 @@ import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.model.DataEvent
 
 object DataEventBuilder {
-  val transactionNameKey     = "transactionName"
   val ninoKey                = "nino"
-  val pathKey                = "path"
   val defaultTransactionName = "explicitAuditEvent"
 
-  def buildEvent(auditSource:String, nino: String, incomingEvent: IncomingEventData, hc: HeaderCarrier): DataEvent = {
-    val tags        = incomingEvent.tags.getOrElse(Map())
+  def buildEvent(auditSource: String, nino: String, incomingEvent: IncomingAuditEvent, hc: HeaderCarrier): DataEvent = {
     val generatedAt = incomingEvent.generatedAt.map(d => new DateTime(d.toInstant.toEpochMilli)).getOrElse(DateTime.now())
-    val transactionName: String = tags.getOrElse(transactionNameKey, defaultTransactionName)
-    val path:            String = tags.getOrElse(pathKey, incomingEvent.auditType)
+    val transactionName: String = incomingEvent.transactionName.getOrElse(defaultTransactionName)
+    val path:            String = incomingEvent.path.getOrElse(incomingEvent.auditType)
 
     DataEvent(
       auditSource,
       incomingEvent.auditType,
-      tags        = hc.toAuditTags(transactionName, path),
-      detail      = incomingEvent.detail ++ Map(ninoKey -> nino),
+      // The `toAuditTags` adds a bunch of standard values from the header carrier
+      tags = hc.toAuditTags(transactionName, path),
+      // At the time of writing, `toAuditDetails` does nothing other than rebuild this list of key/value pairs
+      // back into a Map[String, String], but I guess it's possible that sometime in the future it might change
+      // to add some standard details, which is why I'm pushing our values through it
+      detail      = hc.toAuditDetails((incomingEvent.detail ++ Map(ninoKey -> nino)).toList: _*),
       generatedAt = generatedAt
     )
   }

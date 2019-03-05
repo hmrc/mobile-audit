@@ -1,7 +1,7 @@
 package uk.gov.hmrc.mobileaudit
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.mobileaudit.controllers.IncomingEventData
+import uk.gov.hmrc.mobileaudit.controllers.IncomingAuditEvent
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 
 class SandboxAuditControllerISpec extends BaseISpec {
@@ -12,14 +12,14 @@ class SandboxAuditControllerISpec extends BaseISpec {
 
   "This integration test" - {
     "call the sandbox controller for /audit-event" in {
-      val incomingEvent = IncomingEventData("audit-type", None, Map(), None)
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map())
 
       val response = await(wsUrl("/mobile-audit/audit-event").addHttpHeaders(mobileHeader).post(Json.toJson(incomingEvent)))
       response.status shouldBe 204
     }
 
     "call the sandbox controller for /audit-events" in {
-      val incomingEvent = IncomingEventData("audit-type", None, Map(), None)
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map())
 
       val response = await(wsUrl("/mobile-audit/audit-events").addHttpHeaders(mobileHeader).post(Json.toJson(List(incomingEvent))))
       response.status shouldBe 204

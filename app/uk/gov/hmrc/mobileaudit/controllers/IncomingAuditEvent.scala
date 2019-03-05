@@ -20,19 +20,14 @@ import java.time.ZonedDateTime
 
 import play.api.libs.json.{Json, OFormat}
 
-case class IncomingEventData(
-  auditType:   String,
-  generatedAt: Option[ZonedDateTime],
-  detail:      Map[String, String],
-  tags:        Option[Map[String, String]]
+case class IncomingAuditEvent(
+  auditType:       String,
+  generatedAt:     Option[ZonedDateTime],
+  transactionName: Option[String],
+  path:            Option[String],
+  detail:          Map[String, String]
 )
 
-object IncomingEventData {
-  implicit val formats: OFormat[IncomingEventData] = Json.format
+object IncomingAuditEvent {
+  implicit val formats: OFormat[IncomingAuditEvent] = Json.format
 }
-
-//case class IncomingEvent(name: String, data: IncomingEventData)
-//
-//object IncomingEvent {
-//  implicit val formats: OFormat[IncomingEvent] = Json.format
-//}

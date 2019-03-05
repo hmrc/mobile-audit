@@ -27,13 +27,13 @@ class SandboxAuditController @Inject()(
   implicit ec: ExecutionContext
 ) extends BackendBaseController {
 
-  def auditOneEvent(journeyId: Option[String]): Action[IncomingEventData] = Action(controllerComponents.parsers.json[IncomingEventData]) {
+  def auditOneEvent(journeyId: Option[String]): Action[IncomingAuditEvent] = Action(controllerComponents.parsers.json[IncomingAuditEvent]) {
     implicit request =>
       NoContent
   }
 
-  def auditManyEvents(journeyId: Option[String]): Action[List[IncomingEventData]] =
-    Action(controllerComponents.parsers.json[List[IncomingEventData]]) { implicit request =>
+  def auditManyEvents(journeyId: Option[String]): Action[List[IncomingAuditEvent]] =
+    Action(controllerComponents.parsers.json[List[IncomingAuditEvent]]) { implicit request =>
       NoContent
     }
 
