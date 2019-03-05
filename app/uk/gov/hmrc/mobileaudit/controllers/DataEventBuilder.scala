@@ -28,6 +28,7 @@ object DataEventBuilder {
     val generatedAt = incomingEvent.generatedAt.map(d => new DateTime(d.toInstant.toEpochMilli)).getOrElse(DateTime.now())
     val transactionName: String = incomingEvent.transactionName.getOrElse(defaultTransactionName)
     val path:            String = incomingEvent.path.getOrElse(incomingEvent.auditType)
+    val detail = incomingEvent.detail.getOrElse(Map())
 
     DataEvent(
       auditSource,
@@ -37,7 +38,7 @@ object DataEventBuilder {
       // At the time of writing, `toAuditDetails` does nothing other than rebuild this list of key/value pairs
       // back into a Map[String, String], but I guess it's possible that sometime in the future it might change
       // to add some standard details, which is why I'm pushing our values through it
-      detail      = hc.toAuditDetails((incomingEvent.detail ++ Map(ninoKey -> nino)).toList: _*),
+      detail      = hc.toAuditDetails((detail ++ Map(ninoKey -> nino)).toList: _*),
       generatedAt = generatedAt
     )
   }

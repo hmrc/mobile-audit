@@ -25,6 +25,9 @@ uses:
 /mobile-audit:
   /audit-event:
     post:
+      body:
+        application/json:
+          type: !include schemas/event.json
       displayName: Send a single event to the tax platform for auditing
       description: This endpoint receives a single auditing event and forwards it on to the auditing service.
                    The NINO that is included in the forwarded audit event will be retrieved from the auth service
@@ -36,6 +39,9 @@ uses:
         204:
   /audit-events:
     post:
+      body:
+        application/json:
+          type: !include schemas/events.json
       displayName: Send several events to the tax platform for auditing
       description: This endpoint receives an array auditing event and forwards them on to the auditing service.
                    The NINO that is included in the forwarded audit events will be retrieved from the auth service

@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "description": "The audit event details",
+  "properties": {
+    "auditType": {
+      "type": "string",
+      "description": "This will be passed as the audit type in the forwarded datastream event",
+      "examples": [
+        ""
+      ]
+    },
+    "generatedAt": {
+      "type": "string",
+      "description": "An ISO-8601-formatted date/time string with timezone. If not provided then the service will use the time the event was received.",
+      "examples": [
+        "2019-03-05T11:03:30.825Z"
+      ]
+    },
+    "transactionName": {
+      "type": "string",
+      "description": "This value will be passed as the transaction name entry in the tags for the datastream event. If it isn't provided then the service will use a default value.",
+      "examples": [
+        "explicitAuditEvent"
+      ]
+    },
+    "path": {
+      "type": "string",
+      "description": "The path to include in the tags for the datastream event. If not provided, the service will use the value from 'auditType'"
+    },
+    "detail": {
+      "type": "object",
+      "description": "Additional detail that will be passed in the datastream event. All values in the object must be strings."
+    }
+  },
+  "required": [
+    "auditType"
+  ]
+}

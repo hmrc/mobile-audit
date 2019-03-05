@@ -25,7 +25,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val auditSource   = app.configuration.underlying.getString("auditSource")
       val auditType     = "audit-type"
       val testNino      = "AA100000Z"
-      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, Map())
+      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, None)
 
       AuthStub.userIsLoggedIn(testNino)
       AuditStub.respondToAuditWithNoBody

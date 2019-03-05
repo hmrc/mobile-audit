@@ -12,14 +12,14 @@ class SandboxAuditControllerISpec extends BaseISpec {
 
   "This integration test" - {
     "call the sandbox controller for /audit-event" in {
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map())
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, None)
 
       val response = await(wsUrl("/mobile-audit/audit-event").addHttpHeaders(mobileHeader).post(Json.toJson(incomingEvent)))
       response.status shouldBe 204
     }
 
     "call the sandbox controller for /audit-events" in {
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map())
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, None)
 
       val response = await(wsUrl("/mobile-audit/audit-events").addHttpHeaders(mobileHeader).post(Json.toJson(List(incomingEvent))))
       response.status shouldBe 204

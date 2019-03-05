@@ -20,7 +20,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val auditType = "audit-type"
       val testNino  = "AA100000Z"
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, Map())
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, None)
       }
       val auditSource = app.configuration.underlying.getString("auditSource")
 

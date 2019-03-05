@@ -19,10 +19,27 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.Names.named
 import javax.inject.Inject
 import play.api.{Configuration, Environment}
+import uk.gov.hmrc.http.CorePost
+import uk.gov.hmrc.mobileaudit.controllers.api.ApiAccess
+import uk.gov.hmrc.mobileaudit.tasks.ServiceLocatorRegistrationTask
 
-class GuiceModule @Inject()(environment: Environment, configuration: Configuration) extends AbstractModule{
+import scala.collection.JavaConverters._
+
+class GuiceModule @Inject()(environment: Environment, configuration: Configuration) extends AbstractModule {
   override def configure(): Unit = {
     bindConfigString("auditSource", "auditSource")
+
+    bind(classOf[CorePost]).to(classOf[WSHttpImpl])
+    bind(classOf[ServiceLocatorRegistrationTask]).asEagerSingleton()
+
+    bind(classOf[ApiAccess]).toInstance(
+      ApiAccess(
+        "PRIVATE",
+        configuration.underlying
+          .getStringList("api.access.white-list.applicationIds")
+          .asScala
+      )
+    )
   }
 
   private def bindConfigString(name: String, path: String): Unit =

@@ -11,6 +11,7 @@ lazy val microservice = Project(appName, file("."))
     majorVersion := 0,
     scalaVersion := "2.11.12",
     playDefaultPort := 8252,
+    unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test ++ AppDependencies.it,
     dependencyOverrides ++= overrides
   )

@@ -30,7 +30,7 @@ class DataEventBuilderSpec extends FreeSpecLike with Matchers with MockFactory w
     val transactionNameKey = "transactionName"
 
     "and no tag for the path is provided" - {
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map())
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, None)
       val dataEvent     = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
       "then the path tag should be set to the incoming audit type" in {
         dataEvent.tags.get(pathKey) shouldBe Some(incomingEvent.auditType)
@@ -39,7 +39,7 @@ class DataEventBuilderSpec extends FreeSpecLike with Matchers with MockFactory w
 
     "and a tag for the path is provided" - {
       val pathValue     = "path-value"
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, Some("path-value"), Map())
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, Some("path-value"), None)
       val dataEvent     = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
 
       "then it should be copied to the DataEvent" in {
@@ -48,7 +48,7 @@ class DataEventBuilderSpec extends FreeSpecLike with Matchers with MockFactory w
     }
 
     "and no tag for the transactionName is provided" - {
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map())
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, None)
       val dataEvent     = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
       "then the transactionName should be set to the default" in {
         dataEvent.tags.get(transactionNameKey) shouldBe Some(DataEventBuilder.defaultTransactionName)
@@ -58,7 +58,7 @@ class DataEventBuilderSpec extends FreeSpecLike with Matchers with MockFactory w
     "and a tag for the transactionName is provided" - {
       val transactionNameValue = "transaction-name-value"
       val tags                 = Map(transactionNameKey -> transactionNameValue)
-      val incomingEvent        = IncomingAuditEvent("audit-type", None, Some(transactionNameValue), None, Map())
+      val incomingEvent        = IncomingAuditEvent("audit-type", None, Some(transactionNameValue), None, None)
       val dataEvent            = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
 
       "then it should be copied to the DataEvent" in {
@@ -69,7 +69,7 @@ class DataEventBuilderSpec extends FreeSpecLike with Matchers with MockFactory w
     "any nino in the detail section of the incoming event" - {
       val detail            = Map(ninoKey -> "bogus-nino-value")
       val expectedNinoValue = "expected-nino-value"
-      val incomingEvent     = IncomingAuditEvent("audit-type", None, None, None, detail)
+      val incomingEvent     = IncomingAuditEvent("audit-type", None, None, None, Some(detail))
       val dataEvent         = buildEvent("audit-source", expectedNinoValue, incomingEvent, HeaderCarrier())
       "should be replaced with the nino value supplied to the buildEvent function" in {
         dataEvent.detail.get(ninoKey) shouldBe Some(expectedNinoValue)

@@ -25,7 +25,7 @@ case class IncomingAuditEvent(
   generatedAt:     Option[ZonedDateTime],
   transactionName: Option[String],
   path:            Option[String],
-  detail:          Map[String, String]
+  detail:          Option[Map[String, String]]
 )
 
 object IncomingAuditEvent {
