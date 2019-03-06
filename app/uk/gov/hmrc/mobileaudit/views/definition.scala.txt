@@ -6,7 +6,7 @@
   "scopes":[
     {
       "key":"read:native-apps-api-orchestration",
-      "name":"Native Apps API Orchestration",
+      "name":"Access to apis to support mobile apps",
       "description":"Access APIs that are provided specifically for use by the HMRC mobile apps"
     }
   ],
