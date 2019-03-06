@@ -11,9 +11,9 @@
     }
   ],
   "api":{
-    "name":"Mobile Startup",
-    "description":"The API is used to provide data the apps need at the time that they start up.",
-    "context":"mobile-startup",
+    "name":"Mobile Audit",
+    "description":"Allow mobile apps to send audit messages to the platform",
+    "context":"mobile-audit",
     "versions":[
       {
         "version":"1.0",
