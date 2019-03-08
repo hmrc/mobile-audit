@@ -16,16 +16,15 @@
 
 package uk.gov.hmrc.mobileaudit.controllers
 
-import akka.stream.Materializer
 import cats.implicits._
 import javax.inject.{Inject, Named, Singleton}
+import play.api.Logger
 import play.api.mvc.{Action, ControllerComponents, Result}
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve.Retrievals
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import uk.gov.hmrc.play.bootstrap.controller.{BackendBaseController, BackendHeaderCarrierProvider}
+import uk.gov.hmrc.play.bootstrap.controller.BackendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
 @Singleton()
@@ -35,10 +34,8 @@ class LiveAuditController @Inject()(
   auditConnector:                    AuditConnector,
   @Named("auditSource") auditSource: String
 )(
-  implicit val ec: ExecutionContext,
-  val mat:         Materializer
+  implicit val ec: ExecutionContext
 ) extends BackendBaseController
-    with BackendHeaderCarrierProvider
     with AuthorisedFunctions {
 
   def auditOneEvent(journeyId: Option[String]): Action[IncomingAuditEvent] =
@@ -58,10 +55,10 @@ class LiveAuditController @Inject()(
   def forwardAuditEvent(nino: String, incomingEvent: IncomingAuditEvent)(implicit hc: HeaderCarrier): Future[AuditResult] =
     auditConnector.sendEvent(DataEventBuilder.buildEvent(auditSource, nino, incomingEvent, hc))
 
-  private def withNinoFromAuth(f: String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =
-    authConnector
-      .authorise(EmptyPredicate, Retrievals.nino)
-      .flatMap {
+  private def withNinoFromAuth(f: String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
+    Logger.info(s"looking up nino with token ${hc.authorization}")
+    authorised()
+      .retrieve(Retrievals.nino) {
         case Some(nino) => f(nino)
         case None       => Future.successful(Unauthorized("Authorization failure [user is not enrolled for NI]"))
       }
@@ -69,4 +66,5 @@ class LiveAuditController @Inject()(
         case e: NoActiveSession        => Unauthorized(s"Authorisation failure [${e.reason}]")
         case e: AuthorisationException => Forbidden(s"Authorisation failure [${e.reason}]")
       }
+  }
 }
