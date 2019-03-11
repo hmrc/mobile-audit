@@ -31,7 +31,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/mobile-audit/audit-event").post(Json.toJson(incomingEvent)))
+      val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
       response.status shouldBe 204
 
       verifyAuditEventWasForwarded()
