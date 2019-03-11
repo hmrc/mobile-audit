@@ -1,7 +1,7 @@
 # Add all the application routes to the app.routes file
-->         /mobile-audit                app.Routes
-->         /sandbox/mobile-audit        sandbox.Routes
-->         /                            definition.Routes
-->         /                            health.Routes
+->         /                     app.Routes
+->         /sandbox              sandbox.Routes
+->         /                     definition.Routes
+->         /                     health.Routes
 
-GET        /admin/metrics               com.kenshoo.play.metrics.MetricsController.metrics
+GET        /admin/metrics        com.kenshoo.play.metrics.MetricsController.metrics
