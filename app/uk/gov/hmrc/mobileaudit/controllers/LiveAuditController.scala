@@ -56,7 +56,6 @@ class LiveAuditController @Inject()(
     auditConnector.sendEvent(DataEventBuilder.buildEvent(auditSource, nino, incomingEvent, hc))
 
   private def withNinoFromAuth(f: String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
-    Logger.info(s"looking up nino with token ${hc.authorization}")
     authorised()
       .retrieve(Retrievals.nino) {
         case Some(nino) => f(nino)
