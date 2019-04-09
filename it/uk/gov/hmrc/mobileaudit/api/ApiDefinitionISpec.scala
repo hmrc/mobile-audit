@@ -22,8 +22,6 @@ import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 class ApiDefinitionISpec extends BaseISpec {
 
   override def config: Map[String, Any] = super.config ++ Map(
-    "microservice.services.service-locator.host" -> wireMockHost,
-    "microservice.services.service-locator.port" -> wireMockPort,
     "api.access.white-list.applicationIds"       -> Seq("00010002-0003-0004-0005-000600070008", "00090002-0003-0004-0005-000600070008")
   )
 
