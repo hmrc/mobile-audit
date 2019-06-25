@@ -34,7 +34,7 @@ class EventJsonSpec extends FreeSpecLike with Matchers with SchemaMatchers {
 
   "an event converted to json" - {
     "should validate against the event schema" in {
-      val event = IncomingAuditEvent("auditType", None, None, None, None)
+      val event = IncomingAuditEvent("auditType", None, None, None, Map())
 
       Json.toJson(event) should validateAgainstSchema(strictRamlEventSchema)
     }
@@ -42,7 +42,7 @@ class EventJsonSpec extends FreeSpecLike with Matchers with SchemaMatchers {
 
   "a list of events converted to json" - {
     "should validate against the events schema" in {
-      val event = IncomingAuditEvent("auditType", None, None, None, None)
+      val event = IncomingAuditEvent("auditType", None, None, None, Map())
 
       val json = Json.toJson(obj("events" -> List(event, event)))
       json should validateAgainstSchema(strictRamlEventsSchema)
