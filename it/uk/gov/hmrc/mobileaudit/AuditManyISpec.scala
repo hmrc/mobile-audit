@@ -18,9 +18,11 @@ class AuditManyISpec extends BaseISpec with OptionValues {
   "when multiple events are sent to /audit-events" - {
     "they should all be forwarded to the audit service" in {
       val auditType = "audit-type"
-      val testNino  = "AA100000Z"
+      val testNino = "AA100000Z"
+      val detail = Map("nino" -> testNino)
+
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, None)
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
       }.toList
       val auditSource = app.configuration.underlying.getString("auditSource")
 
@@ -43,7 +45,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
       // confirm that all the data events contain the values we expect
       dataEvents.foreach { dataEvent =>
-        dataEvent.auditSource              shouldBe auditSource
+        dataEvent.auditSource shouldBe auditSource
         dataEvent.detail.get("nino").value shouldBe testNino
       }
 
@@ -54,11 +56,61 @@ class AuditManyISpec extends BaseISpec with OptionValues {
         dataEvents.find(_.auditType == expectedAuditType) shouldBe a[Some[_]]
       }
     }
+
+
+    "it should fail if the nino in the audit body does not match that of the bearer token" in {
+      val auditType = "audit-type"
+      val authNino = "AA100000Z"
+      val maliciousNIno = "OTHERNINO"
+      val detail = Map("nino" -> maliciousNIno)
+
+      val incomingEvents = (0 to 3).map { i =>
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+      }.toList
+      val auditSource = app.configuration.underlying.getString("auditSource")
+
+      AuthStub.userIsLoggedIn(authNino)
+      AuditStub.respondToAuditWithNoBody
+      AuditStub.respondToAuditMergedWithNoBody
+
+      val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      response.status shouldBe 401
+      response.body shouldBe "Authorization failure [failed to validate Nino]"
+
+      verifyAuditEventWasNotForwarded()
+    }
+
+
+    "it should fail if the detail section does not have a nino in the detail body" in {
+      val auditType = "audit-type"
+      val authNino = "AA100000Z"
+      val maliciousNIno = "OTHERNINO"
+      val detail = Map("otherKey" -> maliciousNIno)
+
+      val incomingEvents = (0 to 3).map { i =>
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+      }.toList
+      val auditSource = app.configuration.underlying.getString("auditSource")
+
+      AuthStub.userIsLoggedIn(authNino)
+      AuditStub.respondToAuditWithNoBody
+      AuditStub.respondToAuditMergedWithNoBody
+
+      val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      response.status shouldBe 500
+      (Json.parse(response.body) \ "message").as[JsString].value shouldBe "Details body within request does not contain nino"
+    }
   }
 
   private def verifyAuditEventsWereForwarded(count: Int): Unit =
     wireMockServer.verify(
       count,
+      postRequestedFor(urlPathEqualTo("/write/audit"))
+        .withHeader("content-type", equalTo("application/json")))
+
+  private def verifyAuditEventWasNotForwarded(): Unit =
+    wireMockServer.verify(
+      0,
       postRequestedFor(urlPathEqualTo("/write/audit"))
         .withHeader("content-type", equalTo("application/json")))
 }

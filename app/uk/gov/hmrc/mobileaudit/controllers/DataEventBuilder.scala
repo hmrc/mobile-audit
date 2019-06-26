@@ -28,7 +28,7 @@ object DataEventBuilder {
     val generatedAt = incomingEvent.generatedAt.map(d => new DateTime(d.toInstant.toEpochMilli)).getOrElse(DateTime.now())
     val transactionName: String = incomingEvent.transactionName.getOrElse(defaultTransactionName)
     val path:            String = incomingEvent.path.getOrElse(incomingEvent.auditType)
-    val detail = incomingEvent.detail.getOrElse(Map())
+    val detail = incomingEvent.detail
 
     DataEvent(
       auditSource,
