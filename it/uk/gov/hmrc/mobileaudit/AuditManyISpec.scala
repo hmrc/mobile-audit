@@ -59,6 +59,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
 
     "it should fail if the nino in the audit body does not match that of the bearer token" in {
+      val auditSource = app.configuration.underlying.getString("auditSource")
       val auditType = "audit-type"
       val authNino = "AA100000Z"
       val maliciousNIno = "OTHERNINO"
@@ -67,7 +68,6 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val incomingEvents = (0 to 3).map { i =>
         IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
       }.toList
-      val auditSource = app.configuration.underlying.getString("auditSource")
 
       AuthStub.userIsLoggedIn(authNino)
       AuditStub.respondToAuditWithNoBody
@@ -82,6 +82,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
 
     "it should fail if the detail section does not have a nino in the detail body" in {
+      val auditSource = app.configuration.underlying.getString("auditSource")
       val auditType = "audit-type"
       val authNino = "AA100000Z"
       val maliciousNIno = "OTHERNINO"
@@ -90,15 +91,14 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val incomingEvents = (0 to 3).map { i =>
         IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
       }.toList
-      val auditSource = app.configuration.underlying.getString("auditSource")
 
       AuthStub.userIsLoggedIn(authNino)
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
       val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
-      response.status shouldBe 500
-      (Json.parse(response.body) \ "message").as[JsString].value shouldBe "Details body within request does not contain nino"
+      response.status shouldBe 400
+      response.body shouldBe "Invalid details payload"
     }
   }
 

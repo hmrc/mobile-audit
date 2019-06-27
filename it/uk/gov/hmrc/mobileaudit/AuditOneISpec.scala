@@ -77,8 +77,8 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditMergedWithNoBody
 
       val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
-      response.status shouldBe 500
-      (Json.parse(response.body) \ "message").as[JsString].value shouldBe "Details body within request does not contain nino"
+      response.status shouldBe 400
+      response.body shouldBe "Invalid details payload"
     }
   }
 

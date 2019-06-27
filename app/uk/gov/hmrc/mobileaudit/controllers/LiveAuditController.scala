@@ -37,17 +37,15 @@ class LiveAuditController @Inject()(
 ) extends BackendBaseController
     with AuthorisedFunctions {
 
-  def getNinoFromDetailBody(body: Map[String,String]): String = {
+  def getNinoFromDetailBody(body: Map[String, String]): Option[String] =
     body match {
-      case detailBody if detailBody.keySet.contains("nino") => detailBody("nino")
-      case _ => throw new IllegalStateException("Details body within request does not contain nino")
+      case detailBody if detailBody.keySet.contains("nino") => Some(detailBody("nino"))
+      case _                                                => None
     }
-  }
 
   def auditOneEvent(journeyId: Option[String]): Action[IncomingAuditEvent] =
-    Action.async(controllerComponents.parsers.json[IncomingAuditEvent]) {
-      implicit request =>
-      withNinoFromAuth(forwardAuditEvent(_, request.body).map(_ => NoContent),getNinoFromDetailBody(request.body.detail))
+    Action.async(controllerComponents.parsers.json[IncomingAuditEvent]) { implicit request =>
+      withNinoFromAuth(forwardAuditEvent(_, request.body).map(_ => NoContent), getNinoFromDetailBody(request.body.detail))
     }
 
   def auditManyEvents(journeyId: Option[String]): Action[IncomingAuditEvents] =
@@ -57,23 +55,27 @@ class LiveAuditController @Inject()(
           request.body.events
             .traverse(forwardAuditEvent(ninoFromAuth, _))
             .map(_ => NoContent),
-        getNinoFromDetailBody(request.body.events.head.detail)//Assume all events have the same nino in each event
+        getNinoFromDetailBody(request.body.events.head.detail) //Assume all events have the same nino in each event
       )
     }
 
   def forwardAuditEvent(nino: String, incomingEvent: IncomingAuditEvent)(implicit hc: HeaderCarrier): Future[AuditResult] =
     auditConnector.sendEvent(DataEventBuilder.buildEvent(auditSource, nino, incomingEvent, hc))
 
-  private def withNinoFromAuth(f: String => Future[Result], suppliedNino: String)(implicit hc: HeaderCarrier): Future[Result] = {
-    authorised()
-      .retrieve(Retrievals.nino) {
-        case Some(nino) if nino.toUpperCase == suppliedNino.toUpperCase => f(nino)
-        case Some(nino) if nino.toUpperCase != suppliedNino.toUpperCase => Future.successful(Unauthorized("Authorization failure [failed to validate Nino]"))
-        case None => Future.successful(Unauthorized("Authorization failure [user is not enrolled for NI]"))
-      }
-      .recover {
-        case e: NoActiveSession => Unauthorized(s"Authorisation failure [${e.reason}]")
-        case e: AuthorisationException => Forbidden(s"Authorisation failure [${e.reason}]")
-      }
-  }
+  private def withNinoFromAuth(f: String => Future[Result], suppliedNino: Option[String])(implicit hc: HeaderCarrier): Future[Result] =
+    suppliedNino match {
+      case None => Future.successful(BadRequest("Invalid details payload"))
+      case Some(presentNino) =>
+        authorised()
+          .retrieve(Retrievals.nino) {
+            case None => Future.successful(Unauthorized("Authorization failure [Not enrolled for NI]"))
+            case Some(nino) if nino.toUpperCase == presentNino.toUpperCase => f(nino)
+            case Some(nino) if nino.toUpperCase != presentNino.toUpperCase =>
+              Future.successful(Unauthorized("Authorization failure [failed to validate Nino]"))
+          }
+          .recover {
+            case e: NoActiveSession        => Unauthorized(s"Authorisation failure [${e.reason}]")
+            case e: AuthorisationException => Forbidden(s"Authorisation failure [${e.reason}]")
+          }
+    }
 }
