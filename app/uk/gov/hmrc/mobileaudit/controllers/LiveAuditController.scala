@@ -20,7 +20,7 @@ import cats.implicits._
 import javax.inject.{Inject, Named, Singleton}
 import play.api.mvc.{Action, ControllerComponents, Result}
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.bootstrap.controller.BackendBaseController
@@ -61,6 +61,7 @@ class LiveAuditController @Inject()(
 
   def forwardAuditEvent(nino: String, incomingEvent: IncomingAuditEvent)(implicit hc: HeaderCarrier): Future[AuditResult] =
     auditConnector.sendEvent(DataEventBuilder.buildEvent(auditSource, nino, incomingEvent, hc))
+
 
   private def withNinoFromAuth(f: String => Future[Result], suppliedNino: Option[String])(implicit hc: HeaderCarrier): Future[Result] =
     suppliedNino match {
