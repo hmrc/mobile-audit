@@ -30,7 +30,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      val response = await(wsUrl("/audit-events?journeyId=journeyId").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 204
 
       verifyAuditEventsWereForwarded(incomingEvents.length)
@@ -73,7 +73,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      val response = await(wsUrl("/audit-events?journeyId=journeyId").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 401
       response.body shouldBe "Authorization failure [failed to validate Nino]"
 
@@ -96,7 +96,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      val response = await(wsUrl("/audit-events?journeyId=journeyId").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 400
       response.body shouldBe "Invalid details payload"
     }

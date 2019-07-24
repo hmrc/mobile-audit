@@ -33,7 +33,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
+      val response = await(wsUrl("/audit-event?journeyId=journeyId").post(Json.toJson(incomingEvent)))
       response.status shouldBe 204
 
       verifyAuditEventWasForwarded()
@@ -58,7 +58,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
+      val response = await(wsUrl("/audit-event?journeyId=journeyId").post(Json.toJson(incomingEvent)))
       response.status shouldBe 401
       response.body shouldBe "Authorization failure [failed to validate Nino]"
 
@@ -76,7 +76,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
+      val response = await(wsUrl("/audit-event?journeyId=journeyId").post(Json.toJson(incomingEvent)))
       response.status shouldBe 400
       response.body shouldBe "Invalid details payload"
     }

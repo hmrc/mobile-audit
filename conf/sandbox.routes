@@ -1,6 +1,6 @@
 # microservice specific routes
 
-POST        /audit-event         uk.gov.hmrc.mobileaudit.controllers.SandboxAuditController.auditOneEvent(journeyId :Option[String])
+POST        /audit-event         uk.gov.hmrc.mobileaudit.controllers.SandboxAuditController.auditOneEvent(journeyId: String)
 
-POST        /audit-events        uk.gov.hmrc.mobileaudit.controllers.SandboxAuditController.auditManyEvents(journeyId :Option[String])
+POST        /audit-events        uk.gov.hmrc.mobileaudit.controllers.SandboxAuditController.auditManyEvents(journeyId: String)
 
