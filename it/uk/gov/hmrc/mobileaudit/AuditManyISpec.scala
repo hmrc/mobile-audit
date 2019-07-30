@@ -15,22 +15,24 @@ class AuditManyISpec extends BaseISpec with OptionValues {
   implicit val jodaDateReads: Reads[DateTime]  = play.api.libs.json.JodaReads.DefaultJodaDateTimeReads
   implicit val readDataEvent: Reads[DataEvent] = Json.reads
 
+  val authNino = "AA100000Z"
+  val maliciousNIno = "OTHERNINO"
+
   "when multiple events are sent to /audit-events" - {
     "they should all be forwarded to the audit service" in {
-      val auditType = "audit-type"
-      val testNino = "AA100000Z"
-      val detail = Map("nino" -> testNino)
+
+      val detail = Map("nino" -> authNino)
 
       val incomingEvents = (0 to 3).map { i =>
         IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
       }.toList
       val auditSource = app.configuration.underlying.getString("auditSource")
 
-      AuthStub.userIsLoggedIn(testNino)
+      AuthStub.userIsLoggedIn(authNino)
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 204
 
       verifyAuditEventsWereForwarded(incomingEvents.length)
@@ -46,7 +48,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       // confirm that all the data events contain the values we expect
       dataEvents.foreach { dataEvent =>
         dataEvent.auditSource shouldBe auditSource
-        dataEvent.detail.get("nino").value shouldBe testNino
+        dataEvent.detail.get("nino").value shouldBe authNino
       }
 
       // Cross-check that each of the unique audit-type values from the incoming events are present
@@ -59,10 +61,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
 
     "it should fail if the nino in the audit body does not match that of the bearer token" in {
-      val auditSource = app.configuration.underlying.getString("auditSource")
-      val auditType = "audit-type"
-      val authNino = "AA100000Z"
-      val maliciousNIno = "OTHERNINO"
+
       val detail = Map("nino" -> maliciousNIno)
 
       val incomingEvents = (0 to 3).map { i =>
@@ -73,7 +72,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 401
       response.body shouldBe "Authorization failure [failed to validate Nino]"
 
@@ -82,10 +81,6 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
 
     "it should fail if the detail section does not have a nino in the detail body" in {
-      val auditSource = app.configuration.underlying.getString("auditSource")
-      val auditType = "audit-type"
-      val authNino = "AA100000Z"
-      val maliciousNIno = "OTHERNINO"
       val detail = Map("otherKey" -> maliciousNIno)
 
       val incomingEvents = (0 to 3).map { i =>
@@ -96,7 +91,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 400
       response.body shouldBe "Invalid details payload"
     }

@@ -23,9 +23,9 @@ class AuditOneISpec extends BaseISpec with OptionValues {
   "when a single event sent to /audit-event" - {
     "it should be forwarded to the audit service" in {
       val auditSource   = app.configuration.underlying.getString("auditSource")
-      val auditType     = "audit-type"
       val testNino      = "AA100000Z"
       val detail = Map("nino" -> testNino)
+
 
       val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail)
 
@@ -33,7 +33,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
+      val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
       response.status shouldBe 204
 
       verifyAuditEventWasForwarded()
@@ -46,8 +46,6 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       dataEvent.detail.get("nino").value shouldBe testNino
     }
     "it should fail if the nino in the audit body does not match that of the bearer token" in {
-      val auditSource   = app.configuration.underlying.getString("auditSource")
-      val auditType     = "audit-type"
       val authNino      = "AA100000Z"
       val maliciousNIno = "OTHERNINO"
       val detail = Map("nino" -> maliciousNIno)
@@ -58,15 +56,13 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
+      val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
       response.status shouldBe 401
       response.body shouldBe "Authorization failure [failed to validate Nino]"
 
       verifyAuditEventWasNotForwarded()
     }
     "it should fail if the detail section does not have a nino in the detail body" in {
-      val auditSource   = app.configuration.underlying.getString("auditSource")
-      val auditType     = "audit-type"
       val nino      = "AA100000X"
       val detail = Map("otherKey" -> nino)
 
@@ -76,7 +72,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
+      val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
       response.status shouldBe 400
       response.body shouldBe "Invalid details payload"
     }
