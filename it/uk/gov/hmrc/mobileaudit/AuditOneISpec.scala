@@ -76,6 +76,22 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       response.status shouldBe 400
       response.body shouldBe "Invalid details payload"
     }
+    "it should fail if the journeyId is not supplied as a query parameter" in {
+      val nino      = "AA100000X"
+      val detail = Map("otherKey" -> nino)
+
+      val incomingEvent = (0 to 3).map { i =>
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+      }.toList
+
+      AuthStub.userIsLoggedIn(nino)
+      AuditStub.respondToAuditWithNoBody
+      AuditStub.respondToAuditMergedWithNoBody
+
+      val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
+      response.status shouldBe 400
+      response.body shouldBe "{\"statusCode\":400,\"message\":\"bad request\"}"
+    }
   }
 
   private def verifyAuditEventWasForwarded(): Unit =
