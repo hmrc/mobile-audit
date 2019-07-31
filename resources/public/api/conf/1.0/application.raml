@@ -36,6 +36,10 @@ uses:
                    include a NINO.
       (annotations.scope): "read:native-apps-api-orchestration"
       securedBy: [ sec.oauth_2_0: { scopes: [ "read:native-apps-api-orchestration" ] } ]
+      queryParameters:
+        journeyId:
+          type: string
+          required: true
       responses:
         204:
   /audit-events:
@@ -51,5 +55,9 @@ uses:
                    include a NINO.
       (annotations.scope): "read:native-apps-api-orchestration"
       securedBy: [ sec.oauth_2_0: { scopes: [ "read:native-apps-api-orchestration" ] } ]
+      queryParameters:
+        journeyId:
+          type: string
+          required: true
       responses:
         204:
