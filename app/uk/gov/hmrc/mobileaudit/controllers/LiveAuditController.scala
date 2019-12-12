@@ -18,7 +18,7 @@ package uk.gov.hmrc.mobileaudit.controllers
 
 import cats.implicits._
 import javax.inject.{Inject, Named, Singleton}
-import play.api.mvc.{Action, ControllerComponents, Result}
+import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HeaderCarrier
@@ -43,6 +43,12 @@ class LiveAuditController @Inject()(
       case _                                                => None
     }
 
+  def getHeadFromDetails(request: Request[IncomingAuditEvents]): Option[String] =
+    request.body.events.headOption match {
+      case Some(header) => getNinoFromDetailBody(header.detail)
+      case _            => None
+    }
+
   def auditOneEvent(journeyId: String): Action[IncomingAuditEvent] =
     Action.async(controllerComponents.parsers.json[IncomingAuditEvent]) { implicit request =>
       withNinoFromAuth(forwardAuditEvent(_, request.body).map(_ => NoContent), getNinoFromDetailBody(request.body.detail))
@@ -55,13 +61,12 @@ class LiveAuditController @Inject()(
           request.body.events
             .traverse(forwardAuditEvent(ninoFromAuth, _))
             .map(_ => NoContent),
-        getNinoFromDetailBody(request.body.events.head.detail) //Assume all events have the same nino in each event
+        getHeadFromDetails(request) //Assume all events have the same nino in each event
       )
     }
 
   def forwardAuditEvent(nino: String, incomingEvent: IncomingAuditEvent)(implicit hc: HeaderCarrier): Future[AuditResult] =
     auditConnector.sendEvent(DataEventBuilder.buildEvent(auditSource, nino, incomingEvent, hc))
-
 
   private def withNinoFromAuth(f: String => Future[Result], suppliedNino: Option[String])(implicit hc: HeaderCarrier): Future[Result] =
     suppliedNino match {
@@ -69,7 +74,7 @@ class LiveAuditController @Inject()(
       case Some(presentNino) =>
         authorised()
           .retrieve(Retrievals.nino) {
-            case None => Future.successful(Unauthorized("Authorization failure [Not enrolled for NI]"))
+            case None                                                      => Future.successful(Unauthorized("Authorization failure [Not enrolled for NI]"))
             case Some(nino) if nino.toUpperCase == presentNino.toUpperCase => f(nino)
             case Some(nino) if nino.toUpperCase != presentNino.toUpperCase =>
               Future.successful(Unauthorized("Authorization failure [failed to validate Nino]"))
