@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.mobileaudit.schemas
+package uk.gov.hmrc.mobileaudit.domain.types
 
-import java.io.InputStream
+import eu.timepit.refined.W
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.MatchesRegex
 
-object Resources {
+object ModelTypes {
 
-  def withResource[R](
-    resourceName: String,
-    clazz:        Class[_] = getClass
-  )(f:            InputStream => R
-  ): R = {
-    val inputStreamIfExists = Option(clazz.getResourceAsStream(resourceName))
-    inputStreamIfExists
-      .map { inputStream =>
-        try {
-          f(inputStream)
-        } finally {
-          inputStream.close()
-        }
-      }
-      .getOrElse(sys.error(s"Could not find resource $resourceName"))
-  }
+  type JourneyId = String Refined ValidJourneyId
+
+  private type ValidJourneyId =
+    MatchesRegex[W.`"""[A-Fa-f0-9]{8}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{12}"""`.T]
+
 }

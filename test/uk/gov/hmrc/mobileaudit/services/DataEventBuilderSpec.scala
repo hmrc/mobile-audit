@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,8 +58,9 @@ class DataEventBuilderSpec extends FreeSpecLike with Matchers with MockFactory w
     "and a tag for the transactionName is provided" - {
       val transactionNameValue = "transaction-name-value"
       val tags                 = Map(transactionNameKey -> transactionNameValue)
-      val incomingEvent        = IncomingAuditEvent("audit-type", None, Some(transactionNameValue), None, Map("nino" -> "SOMENINO"))
-      val dataEvent            = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
+      val incomingEvent =
+        IncomingAuditEvent("audit-type", None, Some(transactionNameValue), None, Map("nino" -> "SOMENINO"))
+      val dataEvent = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
 
       "then it should be copied to the DataEvent" in {
         dataEvent.tags.get(transactionNameKey) shouldBe Some(transactionNameValue)

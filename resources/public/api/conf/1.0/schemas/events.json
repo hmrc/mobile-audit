@@ -6,7 +6,7 @@
     "events": {
       "type": "array",
       "description": "An array of events to be forwarded",
-      "items" : {
+      "items": {
         "type": "object",
         "properties": {
           "auditType": {

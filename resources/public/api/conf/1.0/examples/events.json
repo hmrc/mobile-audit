@@ -9,7 +9,8 @@
         "extraDetail1": "value 1",
         "extraDetail2": "value 2"
       }
-    },{
+    },
+    {
       "auditType": "externalAuditEvent",
       "generatedAt": "2019-03-05T11:03:30.825Z",
       "transactionName": "transaction",

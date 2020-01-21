@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,14 @@ object DataEventBuilder {
   val ninoKey                = "nino"
   val defaultTransactionName = "explicitAuditEvent"
 
-  def buildEvent(auditSource: String, nino: String, incomingEvent: IncomingAuditEvent, hc: HeaderCarrier): DataEvent = {
-    val generatedAt = incomingEvent.generatedAt.map(d => new DateTime(d.toInstant.toEpochMilli)).getOrElse(DateTime.now())
+  def buildEvent(
+    auditSource:   String,
+    nino:          String,
+    incomingEvent: IncomingAuditEvent,
+    hc:            HeaderCarrier
+  ): DataEvent = {
+    val generatedAt =
+      incomingEvent.generatedAt.map(d => new DateTime(d.toInstant.toEpochMilli)).getOrElse(DateTime.now())
     val transactionName: String = incomingEvent.transactionName.getOrElse(defaultTransactionName)
     val path:            String = incomingEvent.path.getOrElse(incomingEvent.auditType)
     val detail = incomingEvent.detail
