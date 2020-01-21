@@ -17,9 +17,9 @@ trait BaseISpec
     with DefaultAwaitTimeout {
   override implicit lazy val app: Application = appBuilder.build()
 
-  val auditType = "audit-type"
-  val auditEventUrl  = "/audit-event?journeyId=journeyId"
-  val auditEventsUrl  = "/audit-events?journeyId=journeyId"
+  val auditType      = "audit-type"
+  val auditEventUrl  = "/audit-event?journeyId=d9737a82-813b-4b8b-a9f3-0172c96a24e4"
+  val auditEventsUrl = "/audit-events?journeyId=d9737a82-813b-4b8b-a9f3-0172c96a24e4"
 
   def config: Map[String, Any] = Map(
     "appName"                         -> "mobile-audit",

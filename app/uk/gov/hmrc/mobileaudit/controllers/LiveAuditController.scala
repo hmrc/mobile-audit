@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +22,20 @@ import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mobileaudit.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.bootstrap.controller.BackendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
+
 @Singleton()
-class LiveAuditController @Inject()(
+class LiveAuditController @Inject() (
   override val controllerComponents: ControllerComponents,
   override val authConnector:        AuthConnector,
   auditConnector:                    AuditConnector,
   @Named("auditSource") auditSource: String
-)(
-  implicit val ec: ExecutionContext
-) extends BackendBaseController
+)(implicit val ec:                   ExecutionContext)
+    extends BackendBaseController
     with AuthorisedFunctions {
 
   def getNinoFromDetailBody(body: Map[String, String]): Option[String] =
@@ -49,12 +50,13 @@ class LiveAuditController @Inject()(
       case _            => None
     }
 
-  def auditOneEvent(journeyId: String): Action[IncomingAuditEvent] =
+  def auditOneEvent(journeyId: JourneyId): Action[IncomingAuditEvent] =
     Action.async(controllerComponents.parsers.json[IncomingAuditEvent]) { implicit request =>
-      withNinoFromAuth(forwardAuditEvent(_, request.body).map(_ => NoContent), getNinoFromDetailBody(request.body.detail))
+      withNinoFromAuth(forwardAuditEvent(_, request.body).map(_ => NoContent),
+                       getNinoFromDetailBody(request.body.detail))
     }
 
-  def auditManyEvents(journeyId: String): Action[IncomingAuditEvents] =
+  def auditManyEvents(journeyId: JourneyId): Action[IncomingAuditEvents] =
     Action.async(controllerComponents.parsers.json[IncomingAuditEvents]) { implicit request =>
       withNinoFromAuth(
         ninoFromAuth =>
@@ -65,10 +67,18 @@ class LiveAuditController @Inject()(
       )
     }
 
-  def forwardAuditEvent(nino: String, incomingEvent: IncomingAuditEvent)(implicit hc: HeaderCarrier): Future[AuditResult] =
+  def forwardAuditEvent(
+    nino:          String,
+    incomingEvent: IncomingAuditEvent
+  )(implicit hc:   HeaderCarrier
+  ): Future[AuditResult] =
     auditConnector.sendEvent(DataEventBuilder.buildEvent(auditSource, nino, incomingEvent, hc))
 
-  private def withNinoFromAuth(f: String => Future[Result], suppliedNino: Option[String])(implicit hc: HeaderCarrier): Future[Result] =
+  private def withNinoFromAuth(
+    f:            String => Future[Result],
+    suppliedNino: Option[String]
+  )(implicit hc:  HeaderCarrier
+  ): Future[Result] =
     suppliedNino match {
       case None => Future.successful(BadRequest("Invalid details payload"))
       case Some(presentNino) =>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ package uk.gov.hmrc.mobileaudit.schemas
  * limitations under the License.
  */
 
-
 import com.eclipsesource.schema.{SchemaType, SchemaValidator}
 import org.scalatest.matchers.{MatchResult, Matcher}
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
@@ -45,7 +44,7 @@ trait SchemaMatchers {
 
     override def toString(): String = """validateAgainstSchema (<schema>)"""
 
-    override def apply(left: JsValue): MatchResult = {
+    override def apply(left: JsValue): MatchResult =
       schemaValidator.validate(schema, left) match {
         case JsSuccess(_, _) =>
           MatchResult(
@@ -53,7 +52,7 @@ trait SchemaMatchers {
             "JSON was not valid against schema",
             "JSON was valid against schema"
           )
-        case error@JsError(_) =>
+        case error @ JsError(_) =>
           MatchResult(
             matches = false,
             "JSON was not valid against schema, errors: {0}",
@@ -61,7 +60,6 @@ trait SchemaMatchers {
             IndexedSeq(error.errors)
           )
       }
-    }
   }
 
 }
@@ -72,4 +70,3 @@ trait SchemaMatchers {
   * them in the Scala interpreter.
   */
 object SchemaMatchers extends SchemaMatchers
-

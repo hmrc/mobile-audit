@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,20 @@
 package uk.gov.hmrc.mobileaudit.controllers
 import javax.inject.Inject
 import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.mobileaudit.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.play.bootstrap.controller.BackendBaseController
 
 import scala.concurrent.ExecutionContext
 
-class SandboxAuditController @Inject()(
-  val controllerComponents: ControllerComponents
-)(
-  implicit ec: ExecutionContext
-) extends BackendBaseController {
+class SandboxAuditController @Inject() (val controllerComponents: ControllerComponents)(implicit ec: ExecutionContext)
+    extends BackendBaseController {
 
-  def auditOneEvent(journeyId: String): Action[IncomingAuditEvent] = Action(controllerComponents.parsers.json[IncomingAuditEvent]) {
-    implicit request =>
+  def auditOneEvent(journeyId: JourneyId): Action[IncomingAuditEvent] =
+    Action(controllerComponents.parsers.json[IncomingAuditEvent]) { implicit request =>
       NoContent
-  }
+    }
 
-  def auditManyEvents(journeyId: String): Action[List[IncomingAuditEvent]] =
+  def auditManyEvents(journeyId: JourneyId): Action[List[IncomingAuditEvent]] =
     Action(controllerComponents.parsers.json[List[IncomingAuditEvent]]) { implicit request =>
       NoContent
     }

@@ -95,7 +95,6 @@ class AuditManyISpec extends BaseISpec with OptionValues {
     }
 
     "it should fail if the list of events is empty" in {
-      val detail = Map("otherKey" -> authNino)
 
       AuthStub.userIsLoggedIn(authNino)
       AuditStub.respondToAuditWithNoBody
@@ -122,17 +121,31 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       response.status shouldBe 400
       response.body   shouldBe "{\"statusCode\":400,\"message\":\"bad request\"}"
     }
+
+    "it should return 400 with an invalid journeyId" in {
+      val testNino = "AA100000Z"
+      val detail = Map("nino" -> testNino)
+
+      val incomingEvents = (0 to 3).map { i =>
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+      }.toList
+
+      AuthStub.userIsLoggedIn(testNino)
+      AuditStub.respondToAuditWithNoBody
+      AuditStub.respondToAuditMergedWithNoBody
+
+      val response = await(wsUrl("/audit-events?journeyId=ThisIsAnInvalidJourneyId").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      response.status shouldBe 400
+    }
   }
 
   private def verifyAuditEventsWereForwarded(count: Int): Unit =
-    wireMockServer.verify(
-      count,
-      postRequestedFor(urlPathEqualTo("/write/audit"))
-        .withHeader("content-type", equalTo("application/json")))
+    wireMockServer.verify(count,
+                          postRequestedFor(urlPathEqualTo("/write/audit"))
+                            .withHeader("content-type", equalTo("application/json")))
 
   private def verifyAuditEventWasNotForwarded(): Unit =
-    wireMockServer.verify(
-      0,
-      postRequestedFor(urlPathEqualTo("/write/audit"))
-        .withHeader("content-type", equalTo("application/json")))
+    wireMockServer.verify(0,
+                          postRequestedFor(urlPathEqualTo("/write/audit"))
+                            .withHeader("content-type", equalTo("application/json")))
 }

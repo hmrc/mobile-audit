@@ -35,16 +35,22 @@ object AuthStub {
     wireMockServer.stubFor(
       post(urlPathEqualTo("/auth/authorise"))
         .withRequestBody(equalToJson(authoriseRequestBody))
-        .willReturn(aResponse()
-          .withStatus(200)
-          .withBody(Json.obj("nino" -> nino).toString)))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(Json.obj("nino" -> nino).toString)
+        )
+    )
 
   def userIsLoggedInNoNino()(implicit wireMockServer: WireMockServer): StubMapping =
     wireMockServer.stubFor(
       post(urlPathEqualTo("/auth/authorise"))
         .withRequestBody(equalToJson(authoriseRequestBody))
-        .willReturn(aResponse()
-          .withStatus(200)))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+        )
+    )
 
   def userIsLoggedInWithInsufficientConfidenceLevel()(implicit wireMockServer: WireMockServer): StubMapping =
     wireMockServer.stubFor(
@@ -54,7 +60,8 @@ object AuthStub {
           aResponse()
             .withStatus(401)
             .withHeader("WWW-Authenticate", """MDTP detail="InsufficientConfidenceLevel"""")
-        ))
+        )
+    )
 
   def userIsNotLoggedIn()(implicit wireMockServer: WireMockServer): StubMapping =
     wireMockServer.stubFor(
@@ -64,7 +71,8 @@ object AuthStub {
           aResponse()
             .withStatus(401)
             .withHeader("WWW-Authenticate", """MDTP detail="MissingBearerToken"""")
-        ))
+        )
+    )
 
   def authoriseShouldNotHaveBeenCalled()(implicit wireMockServer: WireMockServer): Unit =
     wireMockServer.verify(0, postRequestedFor(urlPathEqualTo("/auth/authorise")))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,16 @@ import play.api.libs.json.{Json, OWrites}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.mobileaudit.views.txt
 
-case class ApiAccess(`type`: String, whitelistedApplicationIds: Seq[String])
+case class ApiAccess(
+  `type`:                    String,
+  whitelistedApplicationIds: Seq[String])
 
 object ApiAccess {
   implicit val writes: OWrites[ApiAccess] = Json.writes[ApiAccess]
 }
 
 @Singleton
-class DocumentationController @Inject()(
+class DocumentationController @Inject() (
   controllerComponents: ControllerComponents,
   assets:               Assets,
   apiAccess:            ApiAccess,
@@ -41,6 +43,9 @@ class DocumentationController @Inject()(
     Ok(txt.definition(apiAccess)).as(JSON)
   }
 
-  override def conf(version: String, file: String): Action[AnyContent] =
+  override def conf(
+    version: String,
+    file:    String
+  ): Action[AnyContent] =
     assets.at(s"/public/api/conf/$version", file)
 }

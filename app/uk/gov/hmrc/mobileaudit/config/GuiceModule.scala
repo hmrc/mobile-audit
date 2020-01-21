@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,11 @@ import uk.gov.hmrc.mobileaudit.controllers.api.ApiAccess
 
 import scala.collection.JavaConverters._
 
-class GuiceModule @Inject()(environment: Environment, configuration: Configuration) extends AbstractModule {
+class GuiceModule @Inject() (
+  environment:   Environment,
+  configuration: Configuration)
+    extends AbstractModule {
+
   override def configure(): Unit = {
     bindConfigString("auditSource", "auditSource")
 
@@ -40,6 +44,9 @@ class GuiceModule @Inject()(environment: Environment, configuration: Configurati
     )
   }
 
-  private def bindConfigString(name: String, path: String): Unit =
+  private def bindConfigString(
+    name: String,
+    path: String
+  ): Unit =
     bindConstant().annotatedWith(named(name)).to(configuration.underlying.getString(path))
 }

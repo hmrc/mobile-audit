@@ -22,7 +22,8 @@ import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 class ApiDefinitionISpec extends BaseISpec {
 
   override def config: Map[String, Any] = super.config ++ Map(
-    "api.access.white-list.applicationIds"       -> Seq("00010002-0003-0004-0005-000600070008", "00090002-0003-0004-0005-000600070008")
+    "api.access.white-list.applicationIds" -> Seq("00010002-0003-0004-0005-000600070008",
+                                                  "00090002-0003-0004-0005-000600070008")
   )
 
   override implicit lazy val app: Application = appBuilder.build()

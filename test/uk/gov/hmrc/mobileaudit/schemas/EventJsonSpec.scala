@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import play.api.libs.json.Json
 import play.api.libs.json.Json._
 import uk.gov.hmrc.mobileaudit.controllers.IncomingAuditEvent
 import uk.gov.hmrc.mobileaudit.schemas.Schema._
+import com.eclipsesource.schema.drafts.Version7._
 
 class EventJsonSpec extends FreeSpecLike with Matchers with SchemaMatchers {
+
   private val strictRamlEventSchema =
     banAdditionalProperties(JsonResource.loadResourceJson("/public/api/conf/1.0/schemas/event.json"))
       .as[SchemaType]

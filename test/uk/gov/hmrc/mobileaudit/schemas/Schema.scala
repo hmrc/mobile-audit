@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,13 @@ object Schema {
     */
   def banAdditionalProperties(schema: JsValue): JsValue = {
     val augmented: JsValue = schema match {
-      case o@JsObject(_) if (schema \ "type").asOpt[String].contains("object") =>
+      case o @ JsObject(_) if (schema \ "type").asOpt[String].contains("object") =>
         o + ("additionalProperties" -> JsBoolean(false))
       case v => v
     }
 
     augmented match {
-      case o@JsObject(_) =>
+      case o @ JsObject(_) =>
         JsObject(o.fields.map { case (k, v) => (k, banAdditionalProperties(v)) })
       case v => v
     }
