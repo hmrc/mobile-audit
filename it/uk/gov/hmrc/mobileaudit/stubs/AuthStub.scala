@@ -42,6 +42,7 @@ object AuthStub {
         )
     )
 
+  // Unused
   def userIsLoggedInNoNino()(implicit wireMockServer: WireMockServer): StubMapping =
     wireMockServer.stubFor(
       post(urlPathEqualTo("/auth/authorise"))
@@ -52,6 +53,7 @@ object AuthStub {
         )
     )
 
+  // Unused
   def userIsLoggedInWithInsufficientConfidenceLevel()(implicit wireMockServer: WireMockServer): StubMapping =
     wireMockServer.stubFor(
       post(urlPathEqualTo("/auth/authorise"))
