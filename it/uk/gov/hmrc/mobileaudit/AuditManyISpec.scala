@@ -124,7 +124,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
     "it should return 400 with an invalid journeyId" in {
       val testNino = "AA100000Z"
-      val detail = Map("nino" -> testNino)
+      val detail   = Map("nino" -> testNino)
 
       val incomingEvents = (0 to 3).map { i =>
         IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
@@ -134,8 +134,48 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl("/audit-events?journeyId=ThisIsAnInvalidJourneyId").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      val response = await(
+        wsUrl("/audit-events?journeyId=ThisIsAnInvalidJourneyId").post(Json.toJson(IncomingAuditEvents(incomingEvents)))
+      )
       response.status shouldBe 400
+    }
+
+    "it should fail if the user is not logged in" in {
+
+      val detail = Map("nino" -> authNino)
+
+      val incomingEvents = (0 to 3).map { i =>
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+      }.toList
+
+      AuthStub.userIsNotLoggedIn()
+      AuditStub.respondToAuditWithNoBody
+      AuditStub.respondToAuditMergedWithNoBody
+
+      val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      response.status shouldBe 401
+      response.body   shouldBe "Authorisation failure [Bearer token not supplied]"
+
+      verifyAuditEventWasNotForwarded()
+    }
+
+    "it should fail if the user have insufficient confidence level" in {
+
+      val detail = Map("nino" -> authNino)
+
+      val incomingEvents = (0 to 3).map { i =>
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+      }.toList
+
+      AuthStub.userIsLoggedInWithInsufficientConfidenceLevel()
+      AuditStub.respondToAuditWithNoBody
+      AuditStub.respondToAuditMergedWithNoBody
+
+      val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      response.status shouldBe 403
+      response.body   shouldBe "Authorisation failure [Insufficient ConfidenceLevel]"
+
+      verifyAuditEventWasNotForwarded()
     }
   }
 
