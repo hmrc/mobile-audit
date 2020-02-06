@@ -18,6 +18,7 @@ package uk.gov.hmrc.mobileaudit.controllers
 
 import cats.implicits._
 import javax.inject.{Inject, Named, Singleton}
+import play.api.Logger
 import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
@@ -84,14 +85,21 @@ class LiveAuditController @Inject() (
       case Some(presentNino) =>
         authorised()
           .retrieve(Retrievals.nino) {
-            case None                                                      => Future.successful(Unauthorized("Authorization failure [Not enrolled for NI]"))
+            case None =>
+              Logger.warn("Authorization failure [Not enrolled for NI]")
+              Future.successful(Unauthorized("Authorization failure [Not enrolled for NI]"))
             case Some(nino) if nino.toUpperCase == presentNino.toUpperCase => f(nino)
             case Some(nino) if nino.toUpperCase != presentNino.toUpperCase =>
+              Logger.warn("Authorization failure [failed to validate Nino]")
               Future.successful(Unauthorized("Authorization failure [failed to validate Nino]"))
           }
           .recover {
-            case e: NoActiveSession        => Unauthorized(s"Authorisation failure [${e.reason}]")
-            case e: AuthorisationException => Forbidden(s"Authorisation failure [${e.reason}]")
+            case e: NoActiveSession =>
+              Logger.warn(s"Authorisation failure [${e.reason}]")
+              Unauthorized(s"Authorisation failure [${e.reason}]")
+            case e: AuthorisationException =>
+              Logger.warn(s"Authorisation failure [${e.reason}]")
+              Forbidden(s"Authorisation failure [${e.reason}]")
           }
     }
 }
