@@ -30,9 +30,8 @@ class SandboxAuditController @Inject() (val controllerComponents: ControllerComp
       NoContent
     }
 
-  def auditManyEvents(journeyId: JourneyId): Action[List[IncomingAuditEvent]] =
-    Action(controllerComponents.parsers.json[List[IncomingAuditEvent]]) { implicit request =>
+  def auditManyEvents(journeyId: JourneyId): Action[IncomingAuditEvents] =
+    Action(controllerComponents.parsers.json[IncomingAuditEvents]) { implicit request =>
       NoContent
     }
-
 }
