@@ -25,6 +25,5 @@ class SandboxAuditControllerISpec extends BaseISpec {
       val response = await(wsUrl(auditEventsUrl).addHttpHeaders(mobileHeader).post(Json.toJson(incomingEvent)))
       response.status shouldBe 204
     }
-
   }
 }
