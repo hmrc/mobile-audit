@@ -1,7 +1,7 @@
 package uk.gov.hmrc.mobileaudit
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.mobileaudit.controllers.IncomingAuditEvent
+import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 
 class SandboxAuditControllerISpec extends BaseISpec {
@@ -19,9 +19,10 @@ class SandboxAuditControllerISpec extends BaseISpec {
     }
 
     "call the sandbox controller for /audit-events" in {
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map("nino" -> "CS700100A"))
-
-      val response = await(wsUrl(auditEventsUrl).addHttpHeaders(mobileHeader).post(Json.toJson(List(incomingEvent))))
+      val incomingEvent = IncomingAuditEvents(events =
+        List(IncomingAuditEvent("audit-type", None, None, None, Map("nino" -> "CS700100A")))
+      )
+      val response = await(wsUrl(auditEventsUrl).addHttpHeaders(mobileHeader).post(Json.toJson(incomingEvent)))
       response.status shouldBe 204
     }
   }
