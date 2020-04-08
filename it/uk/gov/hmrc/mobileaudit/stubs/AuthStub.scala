@@ -53,7 +53,6 @@ object AuthStub {
         )
     )
 
-  // Unused
   def userIsLoggedInWithInsufficientConfidenceLevel()(implicit wireMockServer: WireMockServer): StubMapping =
     wireMockServer.stubFor(
       post(urlPathEqualTo("/auth/authorise"))
@@ -73,6 +72,16 @@ object AuthStub {
           aResponse()
             .withStatus(401)
             .withHeader("WWW-Authenticate", """MDTP detail="MissingBearerToken"""")
+        )
+    )
+
+  def userLogInThrowsUnknownError()(implicit wireMockServer: WireMockServer): StubMapping =
+    wireMockServer.stubFor(
+      post(urlPathEqualTo("/auth/authorise"))
+        .withRequestBody(equalToJson(authoriseRequestBody))
+        .willReturn(
+          aResponse()
+            .withStatus(500)
         )
     )
 

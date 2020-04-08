@@ -1,10 +1,12 @@
 package uk.gov.hmrc.mobileaudit
+import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.ServeEvent
 import org.joda.time.DateTime
 import org.scalatest.OptionValues
+import play.api.Logger
 import play.api.libs.json._
-import uk.gov.hmrc.mobileaudit.controllers.IncomingAuditEvent
+import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents}
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 import uk.gov.hmrc.play.audit.model.DataEvent
@@ -23,8 +25,8 @@ class AuditOneISpec extends BaseISpec with OptionValues {
   "when a single event sent to /audit-event" - {
     "it should be forwarded to the audit service" in {
       val auditSource = app.configuration.underlying.getString("auditSource")
-      val testNino = "AA100000Z"
-      val detail = Map("nino" -> testNino)
+      val testNino    = "AA100000Z"
+      val detail      = Map("nino" -> testNino)
 
       val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail)
 
@@ -40,14 +42,14 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val auditRequest: ServeEvent = getAllServeEvents.asScala.find(_.getRequest.getUrl == "/write/audit").value
       val dataEvent = Json.parse(auditRequest.getRequest.getBodyAsString).validate[DataEvent].get
 
-      dataEvent.auditSource shouldBe auditSource
-      dataEvent.auditType shouldBe incomingEvent.auditType
+      dataEvent.auditSource              shouldBe auditSource
+      dataEvent.auditType                shouldBe incomingEvent.auditType
       dataEvent.detail.get("nino").value shouldBe testNino
     }
     "it should fail if the nino in the audit body does not match that of the bearer token" in {
-      val authNino = "AA100000Z"
+      val authNino      = "AA100000Z"
       val maliciousNIno = "OTHERNINO"
-      val detail = Map("nino" -> maliciousNIno)
+      val detail        = Map("nino" -> maliciousNIno)
 
       val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail)
 
@@ -55,14 +57,23 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
-      response.status shouldBe 401
-      response.body shouldBe "Authorization failure [failed to validate Nino]"
+      withCaptureOfLoggingFrom(Logger) { logs =>
+        val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
+        response.status shouldBe 401
+        response.body   shouldBe "Invalid credentials"
+        assert(
+          logs
+            .filter(_.getLevel == Level.WARN)
+            .head
+            .getMessage
+            .startsWith("Authorization failure [failed to validate Nino]")
+        )
+      }
 
       verifyAuditEventWasNotForwarded()
     }
     "it should fail if the detail section does not have a nino in the detail body" in {
-      val nino = "AA100000X"
+      val nino   = "AA100000X"
       val detail = Map("otherKey" -> nino)
 
       val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail)
@@ -73,15 +84,13 @@ class AuditOneISpec extends BaseISpec with OptionValues {
 
       val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
       response.status shouldBe 400
-      response.body shouldBe "Invalid details payload"
+      response.body   shouldBe "Invalid details payload"
     }
     "it should fail if the journeyId is not supplied as a query parameter" in {
-      val nino = "AA100000X"
+      val nino   = "AA100000X"
       val detail = Map("otherKey" -> nino)
 
-      val incomingEvent = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
-      }.toList
+      val incomingEvent = IncomingAuditEvent(s"$auditType-1", None, None, None, detail)
 
       AuthStub.userIsLoggedIn(nino)
       AuditStub.respondToAuditWithNoBody
@@ -89,12 +98,29 @@ class AuditOneISpec extends BaseISpec with OptionValues {
 
       val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
       response.status shouldBe 400
-      response.body shouldBe "{\"statusCode\":400,\"message\":\"bad request\"}"
+      response.body   shouldBe "{\"statusCode\":400,\"message\":\"bad request\"}"
+    }
+
+    "it should fail if there is an unknow error in Auth" in {
+      val nino   = "AA100000X"
+      val detail = Map("nino" -> nino)
+
+      val incomingEvent = IncomingAuditEvent(s"$auditType-1", None, None, None, detail)
+
+      AuthStub.userLogInThrowsUnknownError()
+      AuditStub.respondToAuditWithNoBody
+      AuditStub.respondToAuditMergedWithNoBody
+
+      val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
+      response.status shouldBe 500
+      response.body   shouldBe "Error occurred creating audit event"
+
+      verifyAuditEventWasNotForwarded()
     }
 
     "it should return 400 without a journeyId" in {
       val testNino = "AA100000Z"
-      val detail = Map("nino" -> testNino)
+      val detail   = Map("nino" -> testNino)
 
       val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail)
 
@@ -108,7 +134,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
 
     "it should return 400 with an invalid journeyId" in {
       val testNino = "AA100000Z"
-      val detail = Map("nino" -> testNino)
+      val detail   = Map("nino" -> testNino)
 
       val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail)
 

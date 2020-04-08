@@ -87,19 +87,22 @@ class LiveAuditController @Inject() (
           .retrieve(Retrievals.nino) {
             case None =>
               Logger.warn("Authorization failure [Not enrolled for NI]")
-              Future.successful(Unauthorized("Authorization failure [Not enrolled for NI]"))
+              Future.successful(Unauthorized("Invalid credentials"))
             case Some(nino) if nino.toUpperCase == presentNino.toUpperCase => f(nino)
             case Some(nino) if nino.toUpperCase != presentNino.toUpperCase =>
               Logger.warn("Authorization failure [failed to validate Nino]")
-              Future.successful(Unauthorized("Authorization failure [failed to validate Nino]"))
+              Future.successful(Unauthorized("Invalid credentials"))
           }
           .recover {
             case e: NoActiveSession =>
               Logger.warn(s"Authorisation failure [${e.reason}]")
-              Unauthorized(s"Authorisation failure [${e.reason}]")
+              Unauthorized(s"Invalid credentials")
             case e: AuthorisationException =>
               Logger.warn(s"Authorisation failure [${e.reason}]")
-              Forbidden(s"Authorisation failure [${e.reason}]")
+              Forbidden(s"Invalid credentials")
+            case e: Exception =>
+              Logger.warn(e.getMessage)
+              InternalServerError("Error occurred creating audit event")
           }
     }
 }
