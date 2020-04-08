@@ -7,6 +7,13 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.classic.{Level, Logger => LogbackLogger}
+import ch.qos.logback.core.read.ListAppender
+import play.api.LoggerLike
+
+import scala.collection.JavaConverters._
+
 trait BaseISpec
     extends FreeSpecLike
     with Matchers
@@ -14,7 +21,8 @@ trait BaseISpec
     with GuiceOneServerPerSuite
     with WireMockSupport
     with FutureAwaits
-    with DefaultAwaitTimeout {
+    with DefaultAwaitTimeout
+    with LogCapturing {
   override implicit lazy val app: Application = appBuilder.build()
 
   val auditType      = "audit-type"
@@ -31,4 +39,21 @@ trait BaseISpec
   protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(config)
 
   protected implicit lazy val wsClient: WSClient = app.injector.instanceOf[WSClient]
+}
+
+trait LogCapturing {
+
+  def withCaptureOfLoggingFrom(logger: LogbackLogger)(body: (=> List[ILoggingEvent]) => Unit) {
+    val appender = new ListAppender[ILoggingEvent]()
+    appender.setContext(logger.getLoggerContext)
+    appender.start()
+    logger.addAppender(appender)
+    logger.setLevel(Level.ALL)
+    logger.setAdditive(true)
+    body(appender.list.asScala.toList)
+  }
+
+  def withCaptureOfLoggingFrom(logger: LoggerLike)(body: (=> List[ILoggingEvent]) => Unit) {
+    withCaptureOfLoggingFrom(logger.logger.asInstanceOf[LogbackLogger])(body)
+  }
 }

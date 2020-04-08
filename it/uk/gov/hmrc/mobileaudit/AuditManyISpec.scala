@@ -1,8 +1,10 @@
 package uk.gov.hmrc.mobileaudit
 
+import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.DateTime
 import org.scalatest.OptionValues
+import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents}
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
@@ -71,10 +73,18 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
-      response.status shouldBe 401
-      response.body   shouldBe "Authorization failure [failed to validate Nino]"
-
+      withCaptureOfLoggingFrom(Logger) { logs =>
+        val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+        response.status shouldBe 401
+        response.body   shouldBe "Invalid credentials"
+        assert(
+          logs
+            .filter(_.getLevel == Level.WARN)
+            .head
+            .getMessage
+            .startsWith("Authorization failure [failed to validate Nino]")
+        )
+      }
       verifyAuditEventWasNotForwarded()
     }
 
@@ -152,10 +162,18 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
-      response.status shouldBe 401
-      response.body   shouldBe "Authorisation failure [Bearer token not supplied]"
-
+      withCaptureOfLoggingFrom(Logger) { logs =>
+        val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+        response.status shouldBe 401
+        response.body   shouldBe "Invalid credentials"
+        assert(
+          logs
+            .filter(_.getLevel == Level.WARN)
+            .head
+            .getMessage
+            .startsWith("Authorisation failure [Bearer token not supplied]")
+        )
+      }
       verifyAuditEventWasNotForwarded()
     }
 
@@ -171,9 +189,53 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
-      response.status shouldBe 403
-      response.body   shouldBe "Authorisation failure [Insufficient ConfidenceLevel]"
+      withCaptureOfLoggingFrom(Logger) { logs =>
+        val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+        response.status shouldBe 403
+        response.body   shouldBe "Invalid credentials"
+
+        assert(
+          logs
+            .filter(_.getLevel == Level.WARN)
+            .head
+            .getMessage
+            .startsWith("Authorisation failure [Insufficient ConfidenceLevel]")
+        )
+      }
+      verifyAuditEventWasNotForwarded()
+    }
+
+    "it should fail if there is an unknow error in Auth" in {
+
+      val detail = Map("nino" -> authNino)
+
+      val incomingEvents = (0 to 3).map { i =>
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+      }.toList
+
+      AuthStub.userLogInThrowsUnknownError()
+      AuditStub.respondToAuditWithNoBody
+      AuditStub.respondToAuditMergedWithNoBody
+
+      withCaptureOfLoggingFrom(Logger) { logs =>
+        val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+        response.status shouldBe 500
+        response.body   shouldBe "Error occurred creating audit event"
+        assert(
+          logs
+            .filter(_.getLevel == Level.WARN)
+            .head
+            .getMessage
+            .startsWith("POST of 'http://localhost:")
+        )
+        assert(
+          logs
+            .filter(_.getLevel == Level.WARN)
+            .head
+            .getMessage
+            .endsWith("auth/authorise' returned 500. Response body: ''")
+        )
+      }
 
       verifyAuditEventWasNotForwarded()
     }
