@@ -12,11 +12,11 @@ Send an audit message to the platform.
 
 *  **URL Params**
 
-   **Optional:**
+   **Required:**
  
    `journeyId=[journeyId]`
    
-   The journey Id may be supplied for logging and diagnostic purposes.
+   The journey Id is supplied for logging and diagnostic purposes.
      
 *  **JSON**
 
