@@ -18,7 +18,7 @@ package uk.gov.hmrc.mobileaudit.controllers
 import javax.inject.Inject
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.mobileaudit.domain.types.ModelTypes.JourneyId
-import uk.gov.hmrc.play.bootstrap.controller.BackendBaseController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 
 import scala.concurrent.ExecutionContext
 

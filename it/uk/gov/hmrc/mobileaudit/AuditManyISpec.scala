@@ -55,9 +55,9 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
       verifyAuditEventsWereForwarded(incomingEvents.length)
 
-      val dataEvents: List[DataEvent] = getAllServeEvents.asScala
+      val dataEvents: List[JsValue] = getAllServeEvents.asScala
         .filter(_.getRequest.getUrl == "/write/audit")
-        .map(e => Json.parse(e.getRequest.getBodyAsString).validate[DataEvent].get)
+        .map(e => Json.parse(e.getRequest.getBodyAsString.replaceAll("\\\\", "")))
         .toList
 
       // no more, no less
@@ -65,15 +65,15 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
       // confirm that all the data events contain the values we expect
       dataEvents.foreach { dataEvent =>
-        dataEvent.auditSource              shouldBe auditSource
-        dataEvent.detail.get("nino").value shouldBe authNino
+        (dataEvent \ "auditSource").as[String]     shouldBe auditSource
+        (dataEvent \ "detail" \ "nino").as[String] shouldBe authNino
       }
 
       // Cross-check that each of the unique audit-type values from the incoming events are present
       // in the data events send to the audit service
       incomingEvents.indices.foreach { i =>
         val expectedAuditType = s"$auditType-$i"
-        dataEvents.find(_.auditType == expectedAuditType) shouldBe a[Some[_]]
+        dataEvents.toString().contains(expectedAuditType) shouldBe true
       }
     }
 
