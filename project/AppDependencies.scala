@@ -3,8 +3,8 @@ import sbt._
 
 object AppDependencies {
 
-  private val play26Bootstrap    = "1.3.0"
-  private val playHmrcApiVersion = "4.1.0-play-26"
+  private val play26Bootstrap    = "3.0.0"
+  private val playHmrcApiVersion = "6.2.0-play-26"
   private val catsCore           = "1.6.0"
 
   private val pegdownVersion                 = "1.6.0"
@@ -15,14 +15,14 @@ object AppDependencies {
   private val playJsonJodaVersion            = "2.6.13"
   private val playJsonSchemaValidatorVersion = "0.9.5"
   private val scalaCheckVersion              = "1.14.0"
-  private val integrationTestVersion         = "0.9.0-play-26"
+  private val integrationTestVersion         = "1.1.0-play-26"
   private val refinedVersion                 = "0.9.4"
 
   val compile: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"   %% "bootstrap-play-26" % play26Bootstrap,
-    "uk.gov.hmrc"   %% "play-hmrc-api"     % playHmrcApiVersion,
-    "org.typelevel" %% "cats-core"         % catsCore,
-    "eu.timepit"    %% "refined"           % refinedVersion
+    "uk.gov.hmrc"   %% "bootstrap-backend-play-26" % play26Bootstrap,
+    "uk.gov.hmrc"   %% "play-hmrc-api"             % playHmrcApiVersion,
+    "org.typelevel" %% "cats-core"                 % catsCore,
+    "eu.timepit"    %% "refined"                   % refinedVersion
   )
 
   val test: Seq[ModuleID] = Seq(

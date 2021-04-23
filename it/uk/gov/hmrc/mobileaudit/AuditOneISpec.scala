@@ -22,6 +22,7 @@ import org.joda.time.DateTime
 import org.scalatest.OptionValues
 import play.api.Logger
 import play.api.libs.json._
+import play.api.test.Helpers.contentAsJson
 import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents}
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
@@ -56,11 +57,12 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       verifyAuditEventWasForwarded()
 
       val auditRequest: ServeEvent = getAllServeEvents.asScala.find(_.getRequest.getUrl == "/write/audit").value
-      val dataEvent = Json.parse(auditRequest.getRequest.getBodyAsString).validate[DataEvent].get
 
-      dataEvent.auditSource              shouldBe auditSource
-      dataEvent.auditType                shouldBe incomingEvent.auditType
-      dataEvent.detail.get("nino").value shouldBe testNino
+      val dataEvent = Json.parse(auditRequest.getRequest.getBodyAsString.replaceAll("\\\\", ""))
+
+      (dataEvent \ "auditSource").as[String]     shouldBe auditSource
+      (dataEvent \ "auditType").as[String]       shouldBe incomingEvent.auditType
+      (dataEvent \ "detail" \ "nino").as[String] shouldBe testNino
     }
     "it should fail if the nino in the audit body does not match that of the bearer token" in {
       val authNino      = "AA100000Z"
