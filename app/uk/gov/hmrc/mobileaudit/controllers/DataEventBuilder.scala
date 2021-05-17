@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.mobileaudit.controllers
-import org.joda.time.DateTime
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.model.DataEvent

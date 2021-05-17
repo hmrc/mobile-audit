@@ -43,9 +43,4 @@ class DocumentationController @Inject() (
     Ok(txt.definition(apiAccess)).as(JSON)
   }
 
-  override def conf(
-    version: String,
-    file:    String
-  ): Action[AnyContent] =
-    assets.at(s"/public/api/conf/$version", file)
 }

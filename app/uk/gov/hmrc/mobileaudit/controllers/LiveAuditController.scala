@@ -39,6 +39,8 @@ class LiveAuditController @Inject() (
     extends BackendBaseController
     with AuthorisedFunctions {
 
+  val logger: Logger = Logger(this.getClass)
+
   def getNinoFromDetailBody(body: Map[String, String]): Option[String] =
     body match {
       case detailBody if detailBody.keySet.contains("nino") => Some(detailBody("nino"))
@@ -86,22 +88,22 @@ class LiveAuditController @Inject() (
         authorised()
           .retrieve(Retrievals.nino) {
             case None =>
-              Logger.warn("Authorization failure [Not enrolled for NI]")
+              logger.warn("Authorization failure [Not enrolled for NI]")
               Future.successful(Unauthorized("Invalid credentials"))
             case Some(nino) if nino.toUpperCase == presentNino.toUpperCase => f(nino)
             case Some(nino) if nino.toUpperCase != presentNino.toUpperCase =>
-              Logger.warn("Authorization failure [failed to validate Nino]")
+              logger.warn("Authorization failure [failed to validate Nino]")
               Future.successful(Unauthorized("Invalid credentials"))
           }
           .recover {
             case e: NoActiveSession =>
-              Logger.warn(s"Authorisation failure [${e.reason}]")
+              logger.warn(s"Authorisation failure [${e.reason}]")
               Unauthorized(s"Invalid credentials")
             case e: AuthorisationException =>
-              Logger.warn(s"Authorisation failure [${e.reason}]")
+              logger.warn(s"Authorisation failure [${e.reason}]")
               Forbidden(s"Invalid credentials")
             case e: Exception =>
-              Logger.warn(e.getMessage)
+              logger.warn(e.getMessage)
               InternalServerError("Error occurred creating audit event")
           }
     }
