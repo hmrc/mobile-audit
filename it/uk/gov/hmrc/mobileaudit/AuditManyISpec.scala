@@ -22,7 +22,7 @@ import org.joda.time.DateTime
 import org.scalatest.OptionValues
 import play.api.Logger
 import play.api.libs.json._
-import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents}
+import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents, LiveAuditController}
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 import uk.gov.hmrc.play.audit.model.DataEvent
@@ -89,7 +89,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      withCaptureOfLoggingFrom(Logger) { logs =>
+      withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
         val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
         response.status shouldBe 401
         response.body   shouldBe "Invalid credentials"
@@ -178,7 +178,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      withCaptureOfLoggingFrom(Logger) { logs =>
+      withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
         val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
         response.status shouldBe 401
         response.body   shouldBe "Invalid credentials"
@@ -205,7 +205,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      withCaptureOfLoggingFrom(Logger) { logs =>
+      withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
         val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
         response.status shouldBe 403
         response.body   shouldBe "Invalid credentials"
@@ -233,7 +233,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      withCaptureOfLoggingFrom(Logger) { logs =>
+      withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
         val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
         response.status shouldBe 500
         response.body   shouldBe "Error occurred creating audit event"

@@ -49,7 +49,8 @@ trait BaseISpec
     "appName"                         -> "mobile-audit",
     "auditing.enabled"                -> true,
     "auditing.consumer.baseUri.port"  -> wireMockPort,
-    "microservice.services.auth.port" -> wireMockPort
+    "microservice.services.auth.port" -> wireMockPort,
+    "metrics.enabled"                 -> false
   )
 
   protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(config)
