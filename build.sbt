@@ -24,7 +24,10 @@ lazy val microservice = Project(appName, file("."))
   )
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
-  .settings(resolvers += Resolver.jcenterRepo, resolvers += Resolver.bintrayRepo("emueller", "maven"))
+  .settings(
+    resolvers += Resolver.jcenterRepo, resolvers += Resolver.bintrayRepo("emueller", "maven"),
+    resolvers += "third-party-maven-releases" at "https://artefacts.tax.service.gov.uk/artifactory/third-party-maven-releases/"
+)
   .settings( // based on https://tpolecat.github.io/2017/04/25/scalac-flags.html but cut down for scala 2.11
     scalacOptions ++= Seq(
       "-deprecation",
