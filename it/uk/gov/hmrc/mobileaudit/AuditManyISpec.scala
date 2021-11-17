@@ -145,7 +145,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
       val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 400
-      response.body   shouldBe "{\"statusCode\":400,\"message\":\"bad request\"}"
+      response.body   shouldBe "{\"statusCode\":400,\"message\":\"Missing parameter: journeyId\"}"
     }
 
     "it should return 400 with an invalid journeyId" in {

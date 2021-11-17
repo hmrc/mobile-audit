@@ -116,7 +116,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
 
       val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
       response.status shouldBe 400
-      response.body   shouldBe "{\"statusCode\":400,\"message\":\"bad request\"}"
+      response.body   shouldBe "{\"statusCode\":400,\"message\":\"Missing parameter: journeyId\"}"
     }
 
     "it should fail if there is an unknow error in Auth" in {
