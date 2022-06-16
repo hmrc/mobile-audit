@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEve
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 import uk.gov.hmrc.play.audit.model.DataEvent
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier}
 
 import scala.collection.JavaConverters._
 
@@ -38,6 +39,7 @@ import scala.collection.JavaConverters._
 class AuditOneISpec extends BaseISpec with OptionValues {
   implicit val jodaDateReads: Reads[DateTime]  = play.api.libs.json.JodaReads.DefaultJodaDateTimeReads
   implicit val readDataEvent: Reads[DataEvent] = Json.reads
+  val authorisationJsonHeader: (String, String) = "AUTHORIZATION" -> "Bearer 123"
 
   "when a single event sent to /audit-event" - {
     "it should be forwarded to the audit service" in {
@@ -51,7 +53,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
+      val response = await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader)post(Json.toJson(incomingEvent)))
       response.status shouldBe 204
 
       verifyAuditEventWasForwarded()
@@ -76,7 +78,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditMergedWithNoBody
 
       withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
-        val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
+        val response = await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader)post(Json.toJson(incomingEvent)))
         response.status shouldBe 401
         response.body   shouldBe "Invalid credentials"
         assert(
@@ -129,7 +131,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
+      val response = await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader)post(Json.toJson(incomingEvent)))
       response.status shouldBe 500
       response.body   shouldBe "Error occurred creating audit event"
 

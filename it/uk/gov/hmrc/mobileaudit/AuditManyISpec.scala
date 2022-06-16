@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
   val authNino      = "AA100000Z"
   val maliciousNIno = "OTHERNINO"
+  val authorisationJsonHeader: (String, String) = "AUTHORIZATION" -> "Bearer 123"
 
   "when multiple events are sent to /audit-events" - {
     "they should all be forwarded to the audit service" in {
@@ -50,7 +51,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      val response = await(wsUrl(auditEventsUrl).addHttpHeaders(authorisationJsonHeader).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 204
 
       verifyAuditEventsWereForwarded(incomingEvents.length)
@@ -90,7 +91,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditMergedWithNoBody
 
       withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
-        val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+        val response = await(wsUrl(auditEventsUrl).addHttpHeaders(authorisationJsonHeader).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
         response.status shouldBe 401
         response.body   shouldBe "Invalid credentials"
         assert(
@@ -206,7 +207,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditMergedWithNoBody
 
       withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
-        val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+        val response = await(wsUrl(auditEventsUrl).addHttpHeaders(authorisationJsonHeader).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
         response.status shouldBe 403
         response.body   shouldBe "Invalid credentials"
 
@@ -234,7 +235,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditMergedWithNoBody
 
       withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
-        val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+        val response = await(wsUrl(auditEventsUrl).addHttpHeaders(authorisationJsonHeader).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
         response.status shouldBe 500
         response.body   shouldBe "Error occurred creating audit event"
         assert(
