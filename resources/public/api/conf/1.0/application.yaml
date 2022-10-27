@@ -1,0 +1,211 @@
+openapi: 3.0.0
+info:
+  title: Mobile Audit
+  description: >-
+    ### What is this API for?
+
+
+    The API provides endpoints to allow the mobile applications to send audit events to the platform.
+  contact: { }
+  version: '1.0'
+servers:
+  - url: https://test-api.service.hmrc.gov.uk/mobile-audit
+    description: Sandbox
+  - url: https://api.service.hmrc.gov.uk/mobile-audit
+    description: Production
+    variables: {}
+paths:
+  /mobile-audit/audit-event:
+    post:
+      tags:
+        - mobile-audit
+      summary: Send a single event to the tax platform for auditing
+      description: This endpoint receives a single auditing event and forwards it on to the auditing service. The NINO that is included in the forwarded audit event will be retrieved from the auth service using the authentication token on the request, so the event sent to this endpoint should not include a NINO.
+      operationId: Sendasingleeventtothetaxplatformforauditing
+      parameters:
+        - name: journeyId
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/MobileAuditAuditEventrequest'
+                - example:
+                    auditType: externalAuditEvent
+                    generatedAt: 2019-03-05T11:03:30.825Z
+                    transactionName: transaction
+                    path: audit-path
+                    detail:
+                      extraDetail1: value 1
+                      extraDetail2: value 2
+            example:
+              auditType: externalAuditEvent
+              generatedAt: 2019-03-05T11:03:30.825Z
+              transactionName: transaction
+              path: audit-path
+              detail:
+                extraDetail1: value 1
+                extraDetail2: value 2
+        required: true
+      responses:
+        '204':
+          description: ''
+          headers: { }
+          content: { }
+      deprecated: false
+      security:
+        - userRestricted:
+            - read:native-apps-api-orchestration
+  /mobile-audit/audit-events:
+    post:
+      tags:
+        - mobile-audit
+      summary: Send several events to the tax platform for auditing
+      description: This endpoint receives an object containing an array of audit events and forwards them on to the auditing service. The NINO that is included in the forwarded audit events will be retrieved from the auth service using the authentication token on the request, so the events sent to this endpoint should not include a NINO.
+      operationId: Sendseveraleventstothetaxplatformforauditing
+      parameters:
+        - name: journeyId
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/MobileAuditAuditEventsrequest'
+                - example:
+                    events:
+                      - auditType: externalAuditEvent
+                        generatedAt: 2019-03-05T11:03:30.825Z
+                        transactionName: transaction
+                        path: audit-path
+                        detail:
+                          extraDetail1: value 1
+                          extraDetail2: value 2
+                      - auditType: externalAuditEvent
+                        generatedAt: 2019-03-05T11:03:30.825Z
+                        transactionName: transaction
+                        path: audit-path
+                        detail:
+                          extraDetail1: value 1
+                          extraDetail2: value 2
+            example:
+              events:
+                - auditType: externalAuditEvent
+                  generatedAt: 2019-03-05T11:03:30.825Z
+                  transactionName: transaction
+                  path: audit-path
+                  detail:
+                    extraDetail1: value 1
+                    extraDetail2: value 2
+                - auditType: externalAuditEvent
+                  generatedAt: 2019-03-05T11:03:30.825Z
+                  transactionName: transaction
+                  path: audit-path
+                  detail:
+                    extraDetail1: value 1
+                    extraDetail2: value 2
+        required: true
+      responses:
+        '204':
+          description: ''
+          headers: { }
+          content: { }
+      deprecated: false
+      security:
+        - userRestricted:
+            - read:native-apps-api-orchestration
+components:
+  securitySchemes:
+    userRestricted:
+      type: oauth2
+      description: |
+        HMRC supports OAuth 2.0 for authenticating user-restricted API requests using an OAuth 2.0 Bearer Token in the
+        AUTHORIZATION header.
+        See https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/user-restricted-endpoints for details.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://api.service.hmrc.gov.uk/oauth/authorize
+          tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
+          refreshUrl: https://api.service.hmrc.gov.uk/oauth/refresh
+          scopes:
+            read:native-apps-api-orchestration: Allow mobile apps to send audit messages to the platform
+  schemas:
+    errorResponse:
+      title: errorResponse
+      required:
+        - code
+      type: object
+      properties:
+        code:
+          type: string
+    Event:
+      title: Event
+      required:
+        - auditType
+      type: object
+      properties:
+        auditType:
+          type: string
+          description: This will be passed as the audit type in the forwarded datastream event
+        generatedAt:
+          type: string
+          description: An ISO-8601-formatted date/time string with timezone. If not provided then the service will use the time the event was received.
+        transactionName:
+          type: string
+          description: This value will be passed as the transaction name entry in the tags for the datastream event. If it isn't provided then the service will use a default value.
+        path:
+          type: string
+          description: The path to include in the tags for the datastream event. If not provided, the service will use the value from 'auditType'
+        detail:
+          type: object
+          description: Additional detail that will be passed in the datastream event. All values in the object must be strings.
+    MobileAuditAuditEventrequest:
+      title: MobileAuditAuditEventrequest
+      required:
+        - auditType
+      type: object
+      properties:
+        auditType:
+          type: string
+          description: This will be passed as the audit type in the forwarded datastream event
+        generatedAt:
+          type: string
+          description: An ISO-8601-formatted date/time string with timezone. If not provided then the service will use the time the event was received.
+        transactionName:
+          type: string
+          description: This value will be passed as the transaction name entry in the tags for the datastream event. If it isn't provided then the service will use a default value.
+        path:
+          type: string
+          description: The path to include in the tags for the datastream event. If not provided, the service will use the value from 'auditType'
+        detail:
+          type: object
+          description: Additional detail that will be passed in the datastream event. All values in the object must be strings.
+      description: The audit event details
+    MobileAuditAuditEventsrequest:
+      title: MobileAuditAuditEventsrequest
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+          description: An array of events to be forwarded
+      description: The audit event details
+tags:
+  - name: mobile-audit
+    description: ''
