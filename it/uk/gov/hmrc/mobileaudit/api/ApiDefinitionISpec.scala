@@ -49,9 +49,9 @@ class ApiDefinitionISpec extends BaseISpec {
     }
   }
 
-  "GET /api/conf/1.0/application.raml" - {
-    "should return RAML" in {
-      val response = await(wsUrl("/api/conf/1.0/application.raml").get())
+  "GET /api/conf/1.0/application.yaml" - {
+    "should return YAML" in {
+      val response = await(wsUrl("/api/conf/1.0/application.yaml").get())
       response.status shouldBe 200
     }
   }
