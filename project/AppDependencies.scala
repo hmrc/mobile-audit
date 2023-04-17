@@ -32,7 +32,8 @@ object AppDependencies {
     "org.pegdown"       % "pegdown"                     % pegdownVersion                 % "test, it",
     "org.scalacheck"    %% "scalacheck"                 % scalaCheckVersion              % "test, it",
     "com.typesafe.play" %% "play-json-joda"             % playJsonJodaVersion            % "test, it",
-    "com.eclipsesource" %% "play-json-schema-validator" % playJsonSchemaValidatorVersion % "test"
+    "com.eclipsesource" %% "play-json-schema-validator" % playJsonSchemaValidatorVersion % "test",
+    "uk.gov.hmrc"       %% "bootstrap-test-play-28"     % play28Bootstrap                % "test, it"
   )
 
   val it: Seq[ModuleID] = Seq(
