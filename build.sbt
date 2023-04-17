@@ -12,8 +12,7 @@ lazy val microservice = Project(appName, file("."))
     scalaVersion := "2.12.8",
     playDefaultPort := 8252,
     unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
-    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test ++ AppDependencies.it,
-    dependencyOverrides ++= overrides
+    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test ++ AppDependencies.it
   )
   .settings(publishingSettings: _*)
   .settings(
@@ -25,9 +24,9 @@ lazy val microservice = Project(appName, file("."))
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
   .settings(
-    resolvers += Resolver.jcenterRepo, resolvers += Resolver.bintrayRepo("emueller", "maven"),
-    resolvers += "third-party-maven-releases" at "https://artefacts.tax.service.gov.uk/artifactory/third-party-maven-releases/"
-)
+    resolvers += Resolver.jcenterRepo,
+    resolvers += Resolver.bintrayRepo("emueller", "maven")
+  )
   .settings( // based on https://tpolecat.github.io/2017/04/25/scalac-flags.html but cut down for scala 2.11
     scalacOptions ++= Seq(
       "-deprecation",
@@ -53,25 +52,3 @@ lazy val microservice = Project(appName, file("."))
     coverageHighlighting := true,
     coverageExcludedPackages := "<empty>;com.kenshoo.play.metrics.*;.*definition.*;prod.*;testOnlyDoNotUseInAppConf.*;app.*;.*BuildInfo.*;.*Routes.*;.*javascript.*;.*Reverse.*"
   )
-
-// Transitive dependencies in scalatest/scalatestplusplay drag in a newer version of jetty that is not
-// compatible with wiremock, so we need to pin the jetty stuff to the older version.
-// see https://groups.google.com/forum/#!topic/play-framework/HAIM1ukUCnI
-val jettyVersion = "9.2.13.v20150730"
-
-val overrides: Seq[ModuleID] = Seq(
-  "org.eclipse.jetty"           % "jetty-server"       % jettyVersion,
-  "org.eclipse.jetty"           % "jetty-servlet"      % jettyVersion,
-  "org.eclipse.jetty"           % "jetty-security"     % jettyVersion,
-  "org.eclipse.jetty"           % "jetty-servlets"     % jettyVersion,
-  "org.eclipse.jetty"           % "jetty-continuation" % jettyVersion,
-  "org.eclipse.jetty"           % "jetty-webapp"       % jettyVersion,
-  "org.eclipse.jetty"           % "jetty-xml"          % jettyVersion,
-  "org.eclipse.jetty"           % "jetty-client"       % jettyVersion,
-  "org.eclipse.jetty"           % "jetty-http"         % jettyVersion,
-  "org.eclipse.jetty"           % "jetty-io"           % jettyVersion,
-  "org.eclipse.jetty"           % "jetty-util"         % jettyVersion,
-  "org.eclipse.jetty.websocket" % "websocket-api"      % jettyVersion,
-  "org.eclipse.jetty.websocket" % "websocket-common"   % jettyVersion,
-  "org.eclipse.jetty.websocket" % "websocket-client"   % jettyVersion
-)
