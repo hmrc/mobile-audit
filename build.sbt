@@ -1,6 +1,5 @@
 import play.sbt.PlayImport.PlayKeys.playDefaultPort
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 val appName = "mobile-audit"
 
@@ -14,7 +13,6 @@ lazy val microservice = Project(appName, file("."))
     unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test ++ AppDependencies.it
   )
-  .settings(publishingSettings: _*)
   .settings(
     routesImport ++= Seq(
       "uk.gov.hmrc.mobileaudit.domain.types._",
