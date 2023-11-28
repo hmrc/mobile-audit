@@ -15,7 +15,6 @@ object AppDependencies {
   private val playJsonJodaVersion            = "2.6.13"
   private val playJsonSchemaValidatorVersion = "0.9.5"
   private val scalaCheckVersion              = "1.14.0"
-  private val integrationTestVersion         = "1.1.0-play-27"
   private val refinedVersion                 = "0.9.4"
 
   val compile: Seq[ModuleID] = Seq(
@@ -40,7 +39,6 @@ object AppDependencies {
     "org.scalatest"          %% "scalatest"                % scalaTestVersion       % "it",
     "com.typesafe.play"      %% "play-test"                % current                % "it",
     "org.pegdown"            % "pegdown"                   % pegdownVersion         % "it",
-    "uk.gov.hmrc"            %% "service-integration-test" % integrationTestVersion % "it",
     "com.github.tomakehurst" % "wiremock"                  % wireMockVersion        % "it",
     "org.scalatestplus.play" %% "scalatestplus-play"       % scalaTestPlusVersion   % "it"
   )
