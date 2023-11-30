@@ -18,11 +18,13 @@ package uk.gov.hmrc.mobileaudit.services
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FreeSpecLike, Matchers, OptionValues}
+import org.scalatest.OptionValues
+import org.scalatest.freespec.AnyFreeSpecLike
+import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mobileaudit.controllers.{DataEventBuilder, IncomingAuditEvent}
 
-class DataEventBuilderSpec extends FreeSpecLike with Matchers with MockFactory with ScalaFutures with OptionValues {
+class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactory with ScalaFutures with OptionValues {
   "when building a DataEvent" - {
     import uk.gov.hmrc.mobileaudit.controllers.DataEventBuilder._
 

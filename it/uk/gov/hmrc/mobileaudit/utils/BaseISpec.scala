@@ -15,23 +15,23 @@
  */
 
 package uk.gov.hmrc.mobileaudit.utils
-import org.scalatest.{FreeSpecLike, Matchers}
 import org.scalatestplus.play.WsScalaTestClient
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.classic.{Level, Logger => LogbackLogger}
 import ch.qos.logback.core.read.ListAppender
+import org.scalatest.freespec.AnyFreeSpecLike
+import org.scalatest.matchers.should.Matchers
 import play.api.LoggerLike
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 trait BaseISpec
-    extends FreeSpecLike
+    extends AnyFreeSpecLike
     with Matchers
     with WsScalaTestClient
     with GuiceOneServerPerSuite
