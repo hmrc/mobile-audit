@@ -17,14 +17,15 @@
 package uk.gov.hmrc.mobileaudit.schemas
 
 import com.eclipsesource.schema.SchemaType
-import org.scalatest.{FreeSpecLike, Matchers}
 import play.api.libs.json.Json
 import play.api.libs.json.Json._
 import uk.gov.hmrc.mobileaudit.controllers.IncomingAuditEvent
 import uk.gov.hmrc.mobileaudit.schemas.Schema._
 import com.eclipsesource.schema.drafts.Version7._
+import org.scalatest.freespec.AnyFreeSpecLike
+import org.scalatest.matchers.should.Matchers
 
-class EventJsonSpec extends FreeSpecLike with Matchers with SchemaMatchers {
+class EventJsonSpec extends AnyFreeSpecLike with Matchers with SchemaMatchers {
 
   private val strictRamlEventSchema =
     banAdditionalProperties(JsonResource.loadResourceJson("/public/api/conf/1.0/schemas/event.json"))

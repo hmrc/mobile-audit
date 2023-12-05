@@ -21,8 +21,7 @@ import javax.inject.Inject
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.http.CorePost
 import uk.gov.hmrc.mobileaudit.controllers.api.ApiAccess
-
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class GuiceModule @Inject() (
   environment:   Environment,

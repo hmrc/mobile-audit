@@ -18,20 +18,28 @@ package uk.gov.hmrc.mobileaudit
 
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.joda.time.DateTime
 import org.scalatest.OptionValues
 import play.api.Logger
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents, LiveAuditController}
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 import uk.gov.hmrc.play.audit.model.DataEvent
 
-import scala.collection.JavaConverters._
+import java.time.Instant
+import scala.jdk.CollectionConverters._
 
 class AuditManyISpec extends BaseISpec with OptionValues {
-  implicit val jodaDateReads: Reads[DateTime]  = play.api.libs.json.JodaReads.DefaultJodaDateTimeReads
-  implicit val readDataEvent: Reads[DataEvent] = Json.reads
+
+  implicit val readDataEvent: Reads[DataEvent] = (
+    (JsPath \ "auditSource").read[String] and
+    (JsPath \ "auditType").read[String] and
+    (JsPath \ "eventId").read[String] and
+    (JsPath \ "detail").read[Map[String, String]]
+  )((auditSource, auditType, eventId, detail) =>
+    DataEvent(auditSource, auditType, eventId, Map.empty, detail, Instant.now())
+  )
 
   val authNino      = "AA100000Z"
   val maliciousNIno = "OTHERNINO"
@@ -51,7 +59,11 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl(auditEventsUrl).addHttpHeaders(authorisationJsonHeader).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+      val response = await(
+        wsUrl(auditEventsUrl)
+          .addHttpHeaders(authorisationJsonHeader)
+          .post(Json.toJson(IncomingAuditEvents(incomingEvents)))
+      )
       response.status shouldBe 204
 
       verifyAuditEventsWereForwarded(incomingEvents.length)
@@ -91,7 +103,11 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditMergedWithNoBody
 
       withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
-        val response = await(wsUrl(auditEventsUrl).addHttpHeaders(authorisationJsonHeader).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+        val response = await(
+          wsUrl(auditEventsUrl)
+            .addHttpHeaders(authorisationJsonHeader)
+            .post(Json.toJson(IncomingAuditEvents(incomingEvents)))
+        )
         response.status shouldBe 401
         response.body   shouldBe "Invalid credentials"
         assert(
@@ -207,7 +223,11 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditMergedWithNoBody
 
       withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
-        val response = await(wsUrl(auditEventsUrl).addHttpHeaders(authorisationJsonHeader).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+        val response = await(
+          wsUrl(auditEventsUrl)
+            .addHttpHeaders(authorisationJsonHeader)
+            .post(Json.toJson(IncomingAuditEvents(incomingEvents)))
+        )
         response.status shouldBe 403
         response.body   shouldBe "Invalid credentials"
 
@@ -235,7 +255,11 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditMergedWithNoBody
 
       withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
-        val response = await(wsUrl(auditEventsUrl).addHttpHeaders(authorisationJsonHeader).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
+        val response = await(
+          wsUrl(auditEventsUrl)
+            .addHttpHeaders(authorisationJsonHeader)
+            .post(Json.toJson(IncomingAuditEvents(incomingEvents)))
+        )
         response.status shouldBe 500
         response.body   shouldBe "Error occurred creating audit event"
         assert(

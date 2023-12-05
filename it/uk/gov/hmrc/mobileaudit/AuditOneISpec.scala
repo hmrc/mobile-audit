@@ -18,18 +18,17 @@ package uk.gov.hmrc.mobileaudit
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.ServeEvent
-import org.joda.time.DateTime
 import org.scalatest.OptionValues
 import play.api.Logger
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
-import play.api.test.Helpers.contentAsJson
-import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents, LiveAuditController}
+import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, LiveAuditController}
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier}
 
-import scala.collection.JavaConverters._
+import java.time.Instant
+import scala.jdk.CollectionConverters._
 
 /**
   * The unit tests check that various forms of `IncomingEvent` are correctly translated the the
@@ -37,8 +36,16 @@ import scala.collection.JavaConverters._
   * the event we generated
   */
 class AuditOneISpec extends BaseISpec with OptionValues {
-  implicit val jodaDateReads: Reads[DateTime]  = play.api.libs.json.JodaReads.DefaultJodaDateTimeReads
-  implicit val readDataEvent: Reads[DataEvent] = Json.reads
+
+  implicit val readDataEvent: Reads[DataEvent] = (
+    (JsPath \ "auditSource").read[String] and
+    (JsPath \ "auditType").read[String] and
+    (JsPath \ "eventId").read[String] and
+    (JsPath \ "detail").read[Map[String, String]]
+  )((auditSource, auditType, eventId, detail) =>
+    DataEvent(auditSource, auditType, eventId, Map.empty, detail, Instant.now())
+  )
+
   val authorisationJsonHeader: (String, String) = "AUTHORIZATION" -> "Bearer 123"
 
   "when a single event sent to /audit-event" - {
@@ -53,7 +60,8 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader)post(Json.toJson(incomingEvent)))
+      val response =
+        await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader) post (Json.toJson(incomingEvent)))
       response.status shouldBe 204
 
       verifyAuditEventWasForwarded()
@@ -78,7 +86,8 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditMergedWithNoBody
 
       withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
-        val response = await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader)post(Json.toJson(incomingEvent)))
+        val response =
+          await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader) post (Json.toJson(incomingEvent)))
         response.status shouldBe 401
         response.body   shouldBe "Invalid credentials"
         assert(
@@ -131,7 +140,8 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       AuditStub.respondToAuditWithNoBody
       AuditStub.respondToAuditMergedWithNoBody
 
-      val response = await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader)post(Json.toJson(incomingEvent)))
+      val response =
+        await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader) post (Json.toJson(incomingEvent)))
       response.status shouldBe 500
       response.body   shouldBe "Error occurred creating audit event"
 
