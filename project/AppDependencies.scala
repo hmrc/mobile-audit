@@ -10,7 +10,6 @@ object AppDependencies {
   private val wireMockVersion                = "2.21.0"
   private val scalaMockVersion               = "5.2.0"
   private val refinedVersion                  = "0.11.1"
-  private val playJsonSchemaValidatorVersion = "0.9.5"
 
   val compile: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"   %% "bootstrap-backend-play-30" % playBootstrapVersion,
@@ -25,7 +24,7 @@ object AppDependencies {
   }
 
   private def testCommon(scope: String) = Seq(
-    "uk.gov.hmrc" %% "bootstrap-test-play-28" % playBootstrapVersion % scope,
+    "uk.gov.hmrc" %% "bootstrap-test-play-30" % playBootstrapVersion % scope,
     "org.pegdown" % "pegdown"                 % pegdownVersion       % scope
   )
 
@@ -35,8 +34,7 @@ object AppDependencies {
       new TestDependencies {
 
         override lazy val test = testCommon(scope) ++ Seq(
-            "org.scalamock"     %% "scalamock"                  % scalaMockVersion               % scope,
-            "com.eclipsesource" %% "play-json-schema-validator" % playJsonSchemaValidatorVersion % scope
+            "org.scalamock"     %% "scalamock"                  % scalaMockVersion               % scope
           )
       }.test
   }
