@@ -17,12 +17,14 @@
 package uk.gov.hmrc.mobileaudit.controllers
 
 import cats.implicits._
+
 import javax.inject.{Inject, Named, Singleton}
 import play.api.Logger
 import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.mobileaudit.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
@@ -55,16 +57,18 @@ class LiveAuditController @Inject() (
 
   def auditOneEvent(journeyId: JourneyId): Action[IncomingAuditEvent] =
     Action.async(controllerComponents.parsers.json[IncomingAuditEvent]) { implicit request =>
-      withNinoFromAuth(forwardAuditEvent(_, request.body).map(_ => NoContent),
-                       getNinoFromDetailBody(request.body.detail))
+      withRetrievalsFromAuth(
+        authResponse => forwardAuditEvent(authResponse.nino, request.body, authResponse.sessionId).map(_ => NoContent),
+        getNinoFromDetailBody(request.body.detail)
+      )
     }
 
   def auditManyEvents(journeyId: JourneyId): Action[IncomingAuditEvents] =
     Action.async(controllerComponents.parsers.json[IncomingAuditEvents]) { implicit request =>
-      withNinoFromAuth(
-        ninoFromAuth =>
+      withRetrievalsFromAuth(
+        authResponse =>
           request.body.events
-            .traverse(forwardAuditEvent(ninoFromAuth, _))
+            .traverse(forwardAuditEvent(authResponse.nino, _, authResponse.sessionId))
             .map(_ => NoContent),
         getHeadFromDetails(request) //Assume all events have the same nino in each event
       )
@@ -72,13 +76,16 @@ class LiveAuditController @Inject() (
 
   def forwardAuditEvent(
     nino:          String,
-    incomingEvent: IncomingAuditEvent
+    incomingEvent: IncomingAuditEvent,
+    sessionId:     Option[SessionId]
   )(implicit hc:   HeaderCarrier
   ): Future[AuditResult] =
-    auditConnector.sendEvent(DataEventBuilder.buildEvent(auditSource, nino, incomingEvent, hc))
+    auditConnector.sendEvent(
+      DataEventBuilder.buildEvent(auditSource, nino, incomingEvent, hc.copy(sessionId = sessionId))
+    )
 
-  private def withNinoFromAuth(
-    f:            String => Future[Result],
+  private def withRetrievalsFromAuth(
+    f:            RetrievalsResponse => Future[Result],
     suppliedNino: Option[String]
   )(implicit hc:  HeaderCarrier
   ): Future[Result] =
@@ -86,12 +93,13 @@ class LiveAuditController @Inject() (
       case None => Future.successful(BadRequest("Invalid details payload"))
       case Some(presentNino) =>
         authorised()
-          .retrieve(Retrievals.nino) {
-            case None =>
+          .retrieve(Retrievals.nino and Retrievals.mdtpInformation) {
+            case None ~ _ =>
               logger.warn("Authorization failure [Not enrolled for NI]")
               Future.successful(Unauthorized("Invalid credentials"))
-            case Some(nino) if nino.toUpperCase == presentNino.toUpperCase => f(nino)
-            case Some(nino) if nino.toUpperCase != presentNino.toUpperCase =>
+            case Some(nino) ~ sessionId if nino.toUpperCase == presentNino.toUpperCase =>
+              f(RetrievalsResponse(nino, sessionId.map(id => SessionId(id.sessionId))))
+            case Some(nino) ~ _ if nino.toUpperCase != presentNino.toUpperCase =>
               logger.warn("Authorization failure [failed to validate Nino]")
               Future.successful(Unauthorized("Invalid credentials"))
           }
@@ -107,4 +115,9 @@ class LiveAuditController @Inject() (
               InternalServerError("Error occurred creating audit event")
           }
     }
+
+  private case class RetrievalsResponse(
+    nino:      String,
+    sessionId: Option[SessionId])
+
 }
