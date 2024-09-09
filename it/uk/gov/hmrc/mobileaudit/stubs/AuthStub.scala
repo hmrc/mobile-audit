@@ -20,6 +20,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.Json
+import uk.gov.hmrc.auth.core.retrieve.MdtpInformation
 
 object AuthStub {
 
@@ -27,7 +28,7 @@ object AuthStub {
     """
       |{
       | "authorise": [ ],
-      | "retrieve": ["nino"]
+      | "retrieve": ["nino", "mdtpInformation"]
       |}""".stripMargin
   }
 
@@ -38,7 +39,12 @@ object AuthStub {
         .willReturn(
           aResponse()
             .withStatus(200)
-            .withBody(Json.obj("nino" -> nino).toString)
+            .withBody(
+              Json
+                .obj("nino"            -> nino,
+                     "mdtpInformation" -> Json.obj("deviceId" -> "deviceId", "sessionId" -> "sessionId"))
+                .toString
+            )
         )
     )
 
