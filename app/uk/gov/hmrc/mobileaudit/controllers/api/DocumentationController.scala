@@ -24,11 +24,8 @@ import play.api.libs.json.{Json, OWrites}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.mobileaudit.views.txt
 
-import scala.collection.mutable
-
 case class ApiAccess(
-  `type`:                    String,
-  whitelistedApplicationIds: mutable.Buffer[String])
+  `type`:                    String)
 
 object ApiAccess {
   implicit val writes: OWrites[ApiAccess] = Json.writes[ApiAccess]
