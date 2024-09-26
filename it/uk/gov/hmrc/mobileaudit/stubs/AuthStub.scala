@@ -20,8 +20,6 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.Json
-import uk.gov.hmrc.auth.core.retrieve.MdtpInformation
-
 object AuthStub {
 
   private val authoriseRequestBody: String = {

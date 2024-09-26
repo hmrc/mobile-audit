@@ -21,7 +21,6 @@ import javax.inject.Inject
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.http.CorePost
 import uk.gov.hmrc.mobileaudit.controllers.api.ApiAccess
-import scala.jdk.CollectionConverters._
 
 class GuiceModule @Inject() (
   environment:   Environment,
@@ -33,14 +32,7 @@ class GuiceModule @Inject() (
 
     bind(classOf[CorePost]).to(classOf[WSHttpImpl])
 
-    bind(classOf[ApiAccess]).toInstance(
-      ApiAccess(
-        "PRIVATE",
-        configuration.underlying
-          .getStringList("api.access.white-list.applicationIds")
-          .asScala
-      )
-    )
+    bind(classOf[ApiAccess]).toInstance(ApiAccess("PRIVATE"))
   }
 
   private def bindConfigString(
