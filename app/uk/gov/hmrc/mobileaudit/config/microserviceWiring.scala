@@ -19,31 +19,30 @@ package uk.gov.hmrc.mobileaudit.config
 import org.apache.pekko.actor.ActorSystem
 import com.google.inject.Inject
 import com.typesafe.config.Config
+
 import javax.inject.Named
 import play.api.Configuration
-import play.api.libs.ws.WSClient
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.hooks.{HttpHook, HttpHooks}
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder, getClass}
 import uk.gov.hmrc.play.http.ws._
+
+import java.net.URL
 
 trait Hooks extends HttpHooks with HttpAuditing {
   val hooks: Seq[HttpHook] = Seq(AuditingHook)
 }
+abstract class HttpClientV2Impl @Inject()(http: HttpClientV2,
+                                 @Named("appName") val appName: String,
+                                 val auditConnector:            AuditConnector,
+                                 val actorSystem:      ActorSystem,
+                                 config: Configuration)
+                                 extends HttpClientV2 with Hooks {
+  lazy val configuration: Config = config.underlying
 
-class WSHttpImpl @Inject() (
-  val wsClient:                  WSClient,
-  @Named("appName") val appName: String,
-  val auditConnector:            AuditConnector,
-  override val actorSystem:      ActorSystem,
-  config:                        Configuration)
-    extends HttpClient
-    with WSGet
-    with WSPut
-    with WSPost
-    with WSDelete
-    with WSPatch
-    with Hooks {
-  override lazy val configuration: Config = config.underlying
+
 }
+
+
