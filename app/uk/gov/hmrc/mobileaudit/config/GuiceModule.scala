@@ -19,7 +19,6 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.Names.named
 import javax.inject.Inject
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.mobileaudit.controllers.api.ApiAccess
 
 class GuiceModule @Inject() (
@@ -29,8 +28,6 @@ class GuiceModule @Inject() (
 
   override def configure(): Unit = {
     bindConfigString("auditSource", "auditSource")
-
-    bind(classOf[HttpClientV2]).to(classOf[HttpClientV2Impl])
 
     bind(classOf[ApiAccess]).toInstance(ApiAccess("PRIVATE"))
   }
