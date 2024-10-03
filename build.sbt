@@ -1,5 +1,4 @@
 import play.sbt.PlayImport.PlayKeys.playDefaultPort
-import uk.gov.hmrc.DefaultBuildSettings.oneForkedJvmPerTest
 
 val appName = "mobile-audit"
 
@@ -14,7 +13,6 @@ lazy val microservice = Project(appName, file("."))
     playDefaultPort := 8252,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
-    IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
     libraryDependencies ++= AppDependencies()
   )
   .settings(
