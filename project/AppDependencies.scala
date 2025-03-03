@@ -2,14 +2,14 @@ import sbt._
 
 object AppDependencies {
 
-  private val playBootstrapVersion = "9.5.0"
+  private val playBootstrapVersion = "9.10.0"
   private val playHmrcApiVersion   = "8.0.0"
-  private val catsCore             = "2.0.0"
+  private val catsCore             = "2.13.0"
 
-  private val pegdownVersion                 = "1.6.0"
-  private val wireMockVersion                = "2.21.0"
-  private val scalaMockVersion               = "5.2.0"
-  private val refinedVersion                  = "0.11.1"
+  private val pegdownVersion   = "1.6.0"
+  private val wireMockVersion  = "2.21.0"
+  private val scalaMockVersion = "5.2.0"
+  private val refinedVersion   = "0.11.3"
 
   val compile: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"   %% "bootstrap-backend-play-30" % playBootstrapVersion,
@@ -34,7 +34,7 @@ object AppDependencies {
       new TestDependencies {
 
         override lazy val test = testCommon(scope) ++ Seq(
-            "org.scalamock"     %% "scalamock"                  % scalaMockVersion               % scope
+            "org.scalamock" %% "scalamock" % scalaMockVersion % scope
           )
       }.test
   }
