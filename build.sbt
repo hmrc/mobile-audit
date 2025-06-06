@@ -10,7 +10,6 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     majorVersion := 0,
     scalaVersion := "3.6.4",
-    //crossScalaVersions ++= Seq("2.13.16", "3.6.4"),
     playDefaultPort := 8252,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
