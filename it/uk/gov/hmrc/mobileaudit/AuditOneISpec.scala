@@ -26,6 +26,9 @@ import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, LiveAuditControl
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 import uk.gov.hmrc.play.audit.model.DataEvent
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 import java.time.Instant
 import scala.jdk.CollectionConverters._
@@ -89,7 +92,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
         val response =
           await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader) post (Json.toJson(incomingEvent)))
         response.status shouldBe 401
-        response.body   shouldBe "Invalid credentials"
+        response.body.toString   shouldBe "Invalid credentials"
         assert(
           logs
             .filter(_.getLevel == Level.WARN)
@@ -113,7 +116,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
 
       val response = await(wsUrl(auditEventUrl).post(Json.toJson(incomingEvent)))
       response.status shouldBe 400
-      response.body   shouldBe "Invalid details payload"
+      response.body.toString  shouldBe "Invalid details payload"
     }
     "it should fail if the journeyId is not supplied as a query parameter" in {
       val nino   = "AA100000X"
@@ -127,7 +130,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
 
       val response = await(wsUrl("/audit-event").post(Json.toJson(incomingEvent)))
       response.status shouldBe 400
-      response.body   shouldBe "{\"statusCode\":400,\"message\":\"Missing parameter: journeyId\"}"
+      response.body.toString  shouldBe "{\"statusCode\":400,\"message\":\"Missing parameter: journeyId\"}"
     }
 
     "it should fail if there is an unknow error in Auth" in {
@@ -143,7 +146,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val response =
         await(wsUrl(auditEventUrl).addHttpHeaders(authorisationJsonHeader) post (Json.toJson(incomingEvent)))
       response.status shouldBe 500
-      response.body   shouldBe "Error occurred creating audit event"
+      response.body.toString   shouldBe "Error occurred creating audit event"
 
       verifyAuditEventWasNotForwarded()
     }

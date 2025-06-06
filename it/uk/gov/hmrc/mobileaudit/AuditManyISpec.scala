@@ -17,18 +17,21 @@
 package uk.gov.hmrc.mobileaudit
 
 import ch.qos.logback.classic.Level
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import org.scalatest.OptionValues
 import play.api.Logger
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents, LiveAuditController}
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
 import uk.gov.hmrc.play.audit.model.DataEvent
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 import java.time.Instant
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class AuditManyISpec extends BaseISpec with OptionValues {
 
@@ -109,7 +112,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
             .post(Json.toJson(IncomingAuditEvents(incomingEvents)))
         )
         response.status shouldBe 401
-        response.body   shouldBe "Invalid credentials"
+        response.body.toString shouldBe "Invalid credentials"
         assert(
           logs
             .filter(_.getLevel == Level.WARN)
@@ -134,7 +137,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
       val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 400
-      response.body   shouldBe "Invalid details payload"
+      response.body.toString shouldBe "Invalid details payload"
     }
 
     "it should fail if the list of events is empty" in {
@@ -145,7 +148,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
       val response = await(wsUrl(auditEventsUrl).post(Json.parse("""{"events": []}""")))
       response.status shouldBe 400
-      response.body   shouldBe "Invalid details payload"
+      response.body.toString   shouldBe "Invalid details payload"
     }
 
     "it should fail if the journeyId is not supplied as a query parameter" in {
@@ -162,7 +165,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
 
       val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 400
-      response.body   shouldBe "{\"statusCode\":400,\"message\":\"Missing parameter: journeyId\"}"
+      response.body.toString   shouldBe "{\"statusCode\":400,\"message\":\"Missing parameter: journeyId\"}"
     }
 
     "it should return 400 with an invalid journeyId" in {
@@ -198,7 +201,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       withCaptureOfLoggingFrom(Logger(classOf[LiveAuditController])) { logs =>
         val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
         response.status shouldBe 401
-        response.body   shouldBe "Invalid credentials"
+        response.body.toString  shouldBe "Invalid credentials"
         assert(
           logs
             .filter(_.getLevel == Level.WARN)
@@ -229,7 +232,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
             .post(Json.toJson(IncomingAuditEvents(incomingEvents)))
         )
         response.status shouldBe 403
-        response.body   shouldBe "Invalid credentials"
+        response.body.toString  shouldBe "Invalid credentials"
 
         assert(
           logs
@@ -261,7 +264,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
             .post(Json.toJson(IncomingAuditEvents(incomingEvents)))
         )
         response.status shouldBe 500
-        response.body   shouldBe "Error occurred creating audit event"
+        response.body.toString  shouldBe "Error occurred creating audit event"
         assert(
           logs
             .filter(_.getLevel == Level.WARN)
