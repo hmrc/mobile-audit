@@ -20,7 +20,6 @@ import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.MatchesRegex
 
-
 type ValidJourneyId =
   MatchesRegex[
     "[A-Fa-f0-9]{8}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{12}"
@@ -34,21 +33,31 @@ object JourneyId {
   def from(s: String): Either[String, JourneyId] =
     refineV[ValidJourneyId](s).map(JourneyId(_))
 
-  import play.api.mvc.{QueryStringBindable, PathBindable}
+  import play.api.mvc.{PathBindable, QueryStringBindable}
 
   given QueryStringBindable[JourneyId] with {
-    def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, JourneyId]] =
+    def bind(
+      key:    String,
+      params: Map[String, Seq[String]]
+    ): Option[Either[String, JourneyId]] =
       params.get(key).flatMap(_.headOption).map(from)
 
-
-    def unbind(key: String, value: JourneyId): String =
+    def unbind(
+      key:   String,
+      value: JourneyId
+    ): String =
       value.value.value
   }
 
   given PathBindable[JourneyId] with {
-    def bind(key: String, value: String): Either[String, JourneyId] = from(value)
+    def bind(
+      key:   String,
+      value: String
+    ): Either[String, JourneyId] = from(value)
 
-    def unbind(key: String, value: JourneyId): String = value.value.value
+    def unbind(
+      key:   String,
+      value: JourneyId
+    ): String = value.value.value
   }
 }
-

@@ -6,7 +6,7 @@ object AppDependencies {
   private val playHmrcApiVersion   = "8.2.0"
   private val catsCore             = "2.13.0"
 
-  private val pegdownVersion   = "1.6.0"
+  private val flexmarkVersion   = "0.64.8"
   private val wireMockVersion  = "2.21.0"
   private val scalaMockVersion = "6.0.0"
   private val refinedVersion   = "0.11.3"
@@ -25,7 +25,7 @@ object AppDependencies {
 
   private def testCommon(scope: String) = Seq(
     "uk.gov.hmrc" %% "bootstrap-test-play-30" % playBootstrapVersion % scope,
-    "org.pegdown" % "pegdown"                 % pegdownVersion       % scope
+    "com.vladsch.flexmark" % "flexmark"                % flexmarkVersion % scope
   )
 
   object Test {

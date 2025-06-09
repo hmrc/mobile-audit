@@ -70,7 +70,7 @@ class LiveAuditController @Inject() (
           request.body.events
             .traverse(forwardAuditEvent(authResponse.nino, _, authResponse.sessionId))
             .map(_ => NoContent),
-        getHeadFromDetails(request) //Assume all events have the same nino in each event
+        getHeadFromDetails(request) // Assume all events have the same nino in each event
       )
     }
 

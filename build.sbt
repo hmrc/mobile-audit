@@ -23,10 +23,6 @@ lazy val microservice = Project(appName, file("."))
   )
   .configs(IntegrationTest)
   .settings(
-    resolvers += Resolver.jcenterRepo,
-    resolvers += Resolver.bintrayRepo("emueller", "maven")
-  )
-  .settings(
     scalacOptions ++= Seq(
       "-deprecation",
       "-encoding",
