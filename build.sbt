@@ -13,7 +13,8 @@ lazy val microservice = Project(appName, file("."))
     playDefaultPort := 8252,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
-    libraryDependencies ++= AppDependencies()
+    libraryDependencies ++= AppDependencies(),
+    IntegrationTest / parallelExecution := false
   )
   .settings(
     routesImport ++= Seq(
