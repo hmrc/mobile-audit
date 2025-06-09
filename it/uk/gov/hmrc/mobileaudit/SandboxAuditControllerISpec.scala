@@ -19,6 +19,9 @@ package uk.gov.hmrc.mobileaudit
 import play.api.libs.json.Json
 import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 class SandboxAuditControllerISpec extends BaseISpec {
 

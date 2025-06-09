@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.mobileaudit.controllers
 
-import cats.implicits._
+import cats.implicits.*
 
 import javax.inject.{Inject, Named, Singleton}
 import play.api.Logger
 import play.api.mvc.{Action, ControllerComponents, Request, Result}
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.auth.core.retrieve.*
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
-import uk.gov.hmrc.mobileaudit.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.mobileaudit.domain.types.JourneyId
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 
@@ -70,7 +70,7 @@ class LiveAuditController @Inject() (
           request.body.events
             .traverse(forwardAuditEvent(authResponse.nino, _, authResponse.sessionId))
             .map(_ => NoContent),
-        getHeadFromDetails(request) //Assume all events have the same nino in each event
+        getHeadFromDetails(request) // Assume all events have the same nino in each event
       )
     }
 

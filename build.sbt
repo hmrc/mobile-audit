@@ -9,7 +9,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
   .settings(
     majorVersion := 0,
-    scalaVersion := "2.13.12",
+    scalaVersion := "3.6.4",
     playDefaultPort := 8252,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
@@ -18,14 +18,10 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     routesImport ++= Seq(
       "uk.gov.hmrc.mobileaudit.domain.types._",
-      "uk.gov.hmrc.mobileaudit.domain.types.ModelTypes._"
+      "uk.gov.hmrc.mobileaudit.domain.types.JourneyId._"
     )
   )
   .configs(IntegrationTest)
-  .settings(
-    resolvers += Resolver.jcenterRepo,
-    resolvers += Resolver.bintrayRepo("emueller", "maven")
-  )
   .settings(
     scalacOptions ++= Seq(
       "-deprecation",

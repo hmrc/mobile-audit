@@ -19,16 +19,16 @@ import org.scalatestplus.play.WsScalaTestClient
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.{DefaultBodyReadables, WSClient}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import ch.qos.logback.classic.spi.ILoggingEvent
-import ch.qos.logback.classic.{Level, Logger => LogbackLogger}
+import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
 import ch.qos.logback.core.read.ListAppender
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import play.api.LoggerLike
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 trait BaseISpec
     extends AnyFreeSpecLike
@@ -36,7 +36,7 @@ trait BaseISpec
     with WsScalaTestClient
     with GuiceOneServerPerSuite
     with WireMockSupport
-    with FutureAwaits
+    with FutureAwaits 
     with DefaultAwaitTimeout
     with LogCapturing {
   override implicit lazy val app: Application = appBuilder.build()
@@ -60,7 +60,7 @@ trait BaseISpec
 
 trait LogCapturing {
 
-  def withCaptureOfLoggingFrom(logger: LogbackLogger)(body: (=> List[ILoggingEvent]) => Unit) {
+  def withCaptureOfLoggingFrom(logger: LogbackLogger)(body: (=> List[ILoggingEvent]) => Unit) = {
     val appender = new ListAppender[ILoggingEvent]()
     appender.setContext(logger.getLoggerContext)
     appender.start()
@@ -70,7 +70,7 @@ trait LogCapturing {
     body(appender.list.asScala.toList)
   }
 
-  def withCaptureOfLoggingFrom(logger: LoggerLike)(body: (=> List[ILoggingEvent]) => Unit) {
+  def withCaptureOfLoggingFrom(logger: LoggerLike)(body: (=> List[ILoggingEvent]) => Unit): Unit = {
     withCaptureOfLoggingFrom(logger.logger.asInstanceOf[LogbackLogger])(body)
   }
 }
