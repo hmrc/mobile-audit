@@ -16,21 +16,21 @@
 
 package uk.gov.hmrc.mobileaudit.controllers
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.AuditExtensions._
+import uk.gov.hmrc.play.audit.AuditExtensions.*
 import uk.gov.hmrc.play.audit.model.DataEvent
 
 object DataEventBuilder {
-  val ninoKey                = "nino"
+  val ninoKey = "nino"
   val defaultTransactionName = "explicitAuditEvent"
 
   def buildEvent(
-    auditSource:   String,
-    nino:          String,
+    auditSource: String,
+    nino: String,
     incomingEvent: IncomingAuditEvent,
-    hc:            HeaderCarrier
+    hc: HeaderCarrier
   ): DataEvent = {
     val transactionName: String = incomingEvent.transactionName.getOrElse(defaultTransactionName)
-    val path:            String = incomingEvent.path.getOrElse(incomingEvent.auditType)
+    val path: String = incomingEvent.path.getOrElse(incomingEvent.auditType)
     val detail = incomingEvent.detail
 
     DataEvent(

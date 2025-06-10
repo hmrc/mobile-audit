@@ -24,19 +24,18 @@ import play.api.libs.json.{Json, OWrites}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.mobileaudit.views.txt
 
-case class ApiAccess(
-  `type`: String)
+case class ApiAccess(`type`: String)
 
 object ApiAccess {
   implicit val writes: OWrites[ApiAccess] = Json.writes[ApiAccess]
 }
 
 @Singleton
-class DocumentationController @Inject() (
-  controllerComponents: ControllerComponents,
-  assets:               Assets,
-  apiAccess:            ApiAccess,
-  errorHandler:         HttpErrorHandler)
+class DocumentationController @Inject() (controllerComponents: ControllerComponents,
+                                         assets: Assets,
+                                         apiAccess: ApiAccess,
+                                         errorHandler: HttpErrorHandler
+                                        )
     extends uk.gov.hmrc.api.controllers.DocumentationController(controllerComponents, assets, errorHandler) {
 
   override def definition(): Action[AnyContent] = Action {

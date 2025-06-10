@@ -22,8 +22,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 
 import scala.concurrent.ExecutionContext
 
-class SandboxAuditController @Inject() (val controllerComponents: ControllerComponents)(implicit ec: ExecutionContext)
-    extends BackendBaseController {
+class SandboxAuditController @Inject() (val controllerComponents: ControllerComponents)(implicit ec: ExecutionContext) extends BackendBaseController {
 
   def auditOneEvent(journeyId: JourneyId): Action[IncomingAuditEvent] =
     Action(controllerComponents.parsers.json[IncomingAuditEvent]) { implicit request =>
