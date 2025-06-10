@@ -21,10 +21,7 @@ import javax.inject.Inject
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.mobileaudit.controllers.api.ApiAccess
 
-class GuiceModule @Inject() (
-  environment:   Environment,
-  configuration: Configuration)
-    extends AbstractModule {
+class GuiceModule @Inject() (environment: Environment, configuration: Configuration) extends AbstractModule {
 
   override def configure(): Unit = {
     bindConfigString("auditSource", "auditSource")

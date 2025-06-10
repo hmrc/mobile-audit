@@ -37,13 +37,13 @@ object JourneyId {
 
   given QueryStringBindable[JourneyId] with {
     def bind(
-      key:    String,
+      key: String,
       params: Map[String, Seq[String]]
     ): Option[Either[String, JourneyId]] =
       params.get(key).flatMap(_.headOption).map(from)
 
     def unbind(
-      key:   String,
+      key: String,
       value: JourneyId
     ): String =
       value.value.value
@@ -51,12 +51,12 @@ object JourneyId {
 
   given PathBindable[JourneyId] with {
     def bind(
-      key:   String,
+      key: String,
       value: String
     ): Either[String, JourneyId] = from(value)
 
     def unbind(
-      key:   String,
+      key: String,
       value: JourneyId
     ): String = value.value.value
   }

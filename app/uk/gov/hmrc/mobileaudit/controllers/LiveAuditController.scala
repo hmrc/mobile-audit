@@ -34,10 +34,10 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton()
 class LiveAuditController @Inject() (
   override val controllerComponents: ControllerComponents,
-  override val authConnector:        AuthConnector,
-  auditConnector:                    AuditConnector,
+  override val authConnector: AuthConnector,
+  auditConnector: AuditConnector,
   @Named("auditSource") auditSource: String
-)(implicit val ec:                   ExecutionContext)
+)(implicit val ec: ExecutionContext)
     extends BackendBaseController
     with AuthorisedFunctions {
 
@@ -75,20 +75,18 @@ class LiveAuditController @Inject() (
     }
 
   def forwardAuditEvent(
-    nino:          String,
+    nino: String,
     incomingEvent: IncomingAuditEvent,
-    sessionId:     Option[SessionId]
-  )(implicit hc:   HeaderCarrier
-  ): Future[AuditResult] =
+    sessionId: Option[SessionId]
+  )(implicit hc: HeaderCarrier): Future[AuditResult] =
     auditConnector.sendEvent(
       DataEventBuilder.buildEvent(auditSource, nino, incomingEvent, hc.copy(sessionId = sessionId))
     )
 
   private def withRetrievalsFromAuth(
-    f:            RetrievalsResponse => Future[Result],
+    f: RetrievalsResponse => Future[Result],
     suppliedNino: Option[String]
-  )(implicit hc:  HeaderCarrier
-  ): Future[Result] =
+  )(implicit hc: HeaderCarrier): Future[Result] =
     suppliedNino match {
       case None => Future.successful(BadRequest("Invalid details payload"))
       case Some(presentNino) =>
@@ -116,8 +114,6 @@ class LiveAuditController @Inject() (
           }
     }
 
-  private case class RetrievalsResponse(
-    nino:      String,
-    sessionId: Option[SessionId])
+  private case class RetrievalsResponse(nino: String, sessionId: Option[SessionId])
 
 }
