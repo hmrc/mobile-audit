@@ -12,7 +12,6 @@ object AppDependencies {
   private val refinedVersion   = "0.11.3"
 
   val compile: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"   %% "bootstrap-backend-play-30" % playBootstrapVersion,
     "uk.gov.hmrc"   %% "play-hmrc-api-play-30"     % playHmrcApiVersion,
     "org.typelevel" %% "cats-core"                 % catsCore,
     "eu.timepit"    %% "refined"                   % refinedVersion
