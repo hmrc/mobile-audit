@@ -19,6 +19,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.*
 import uk.gov.hmrc.play.audit.model.DataEvent
 
+import java.time.Instant
+
 object DataEventBuilder {
   val ninoKey = "nino"
   val defaultTransactionName = "explicitAuditEvent"
@@ -32,10 +34,12 @@ object DataEventBuilder {
     val transactionName: String = incomingEvent.transactionName.getOrElse(defaultTransactionName)
     val path: String = incomingEvent.path.getOrElse(incomingEvent.auditType)
     val detail = incomingEvent.detail
+    val generatedAt = incomingEvent.generatedAt.map(_.toInstant).getOrElse(Instant.now())
 
     DataEvent(
       auditSource,
       incomingEvent.auditType,
+      generatedAt = generatedAt,
       // The `toAuditTags` adds a bunch of standard values from the header carrier
       tags = hc.toAuditTags(transactionName, path),
       // At the time of writing, `toAuditDetails` does nothing other than rebuild this list of key/value pairs

@@ -24,9 +24,11 @@ import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mobileaudit.controllers.{DataEventBuilder, IncomingAuditEvent}
 
+import java.time.{Instant, ZonedDateTime}
+
 class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactory with ScalaFutures with OptionValues {
   "when building a DataEvent" - {
-    import uk.gov.hmrc.mobileaudit.controllers.DataEventBuilder._
+    import uk.gov.hmrc.mobileaudit.controllers.DataEventBuilder.*
 
     val pathKey            = "path"
     val transactionNameKey = "transactionName"
@@ -76,6 +78,26 @@ class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactor
       val dataEvent         = buildEvent("audit-source", expectedNinoValue, incomingEvent, HeaderCarrier())
       "should be replaced with the nino value supplied to the buildEvent function" in {
         dataEvent.detail.get(ninoKey) shouldBe Some(expectedNinoValue)
+      }
+    }
+
+    "and no generatedAt is provided" - {
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map())
+      val dataEvent = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
+
+      "should default generatedAt to now" in {
+        dataEvent.generatedAt should not be (null)
+        dataEvent.generatedAt.getEpochSecond shouldBe (Instant.now().getEpochSecond +- 1)
+      }
+    }
+
+    "and generatedAt is provided" - {
+      val generatedAt = ZonedDateTime.parse("2026-07-30T12:00:00.000Z")
+      val incomingEvent = IncomingAuditEvent("audit-type", Some(generatedAt), None, None, Map())
+      val dataEvent = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
+
+      "should it should be copied to the DataEvent" in {
+        dataEvent.generatedAt shouldBe generatedAt.toInstant
       }
     }
   }
