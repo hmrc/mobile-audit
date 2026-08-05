@@ -20,42 +20,33 @@ import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import org.scalatest.OptionValues
 import play.api.Logger
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.*
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import uk.gov.hmrc.mobileaudit.controllers.{IncomingAuditEvent, IncomingAuditEvents, LiveAuditController}
 import uk.gov.hmrc.mobileaudit.stubs.{AuditStub, AuthStub}
 import uk.gov.hmrc.mobileaudit.utils.BaseISpec
-import uk.gov.hmrc.play.audit.model.DataEvent
-import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_JsValue
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
-import java.time.Instant
+import java.time.{Clock, Instant, ZoneOffset, ZonedDateTime}
 import scala.jdk.CollectionConverters.*
 
 class AuditManyISpec extends BaseISpec with OptionValues {
 
-  implicit val readDataEvent: Reads[DataEvent] = (
-    (JsPath \ "auditSource").read[String] and
-    (JsPath \ "auditType").read[String] and
-    (JsPath \ "eventId").read[String] and
-    (JsPath \ "detail").read[Map[String, String]]
-  )((auditSource, auditType, eventId, detail) =>
-    DataEvent(auditSource, auditType, eventId, Map.empty, detail, Instant.now())
-  )
-
+  val clock = Clock.fixed(Instant.parse("2026-07-30T12:00:00.000Z"), ZoneOffset.UTC)
   val authNino      = "AA100000Z"
   val maliciousNIno = "OTHERNINO"
   val authorisationJsonHeader: (String, String) = "AUTHORIZATION" -> "Bearer 123"
 
   "when multiple events are sent to /audit-events" - {
+
     "they should all be forwarded to the audit service" in {
 
       val detail = Map("nino" -> authNino)
+      val generatedAt = ZonedDateTime.now(clock)
 
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+        IncomingAuditEvent(s"$auditType-$i", Some(generatedAt), None, None, detail)
       }.toList
+
       val auditSource = app.configuration.underlying.getString("auditSource")
 
       AuthStub.userIsLoggedIn(authNino)
@@ -83,6 +74,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       dataEvents.foreach { dataEvent =>
         (dataEvent \ "auditSource").as[String]     shouldBe auditSource
         (dataEvent \ "detail" \ "nino").as[String] shouldBe authNino
+        (dataEvent \ "generatedAt").as[ZonedDateTime] shouldBe generatedAt
       }
 
       // Cross-check that each of the unique audit-type values from the incoming events are present
@@ -138,6 +130,8 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val response = await(wsUrl(auditEventsUrl).post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 400
       response.body.toString shouldBe "Invalid details payload"
+
+      verifyAuditEventWasNotForwarded()
     }
 
     "it should fail if the list of events is empty" in {
@@ -149,6 +143,8 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val response = await(wsUrl(auditEventsUrl).post(Json.parse("""{"events": []}""")))
       response.status shouldBe 400
       response.body.toString   shouldBe "Invalid details payload"
+
+      verifyAuditEventWasNotForwarded()
     }
 
     "it should fail if the journeyId is not supplied as a query parameter" in {
@@ -166,6 +162,8 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val response = await(wsUrl("/audit-events").post(Json.toJson(IncomingAuditEvents(incomingEvents))))
       response.status shouldBe 400
       response.body.toString   shouldBe "{\"statusCode\":400,\"message\":\"Missing parameter: journeyId\"}"
+
+      verifyAuditEventWasNotForwarded()
     }
 
     "it should return 400 with an invalid journeyId" in {
@@ -184,6 +182,8 @@ class AuditManyISpec extends BaseISpec with OptionValues {
         wsUrl("/audit-events?journeyId=ThisIsAnInvalidJourneyId").post(Json.toJson(IncomingAuditEvents(incomingEvents)))
       )
       response.status shouldBe 400
+
+      verifyAuditEventWasNotForwarded()
     }
 
     "it should fail if the user is not logged in" in {
@@ -210,6 +210,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
             .startsWith("Authorisation failure [Bearer token not supplied]")
         )
       }
+
       verifyAuditEventWasNotForwarded()
     }
 
@@ -242,6 +243,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
             .startsWith("Authorisation failure [Insufficient ConfidenceLevel]")
         )
       }
+
       verifyAuditEventWasNotForwarded()
     }
 
@@ -288,10 +290,14 @@ class AuditManyISpec extends BaseISpec with OptionValues {
   private def verifyAuditEventsWereForwarded(count: Int): Unit =
     wireMockServer.verify(count,
                           postRequestedFor(urlPathEqualTo("/write/audit"))
-                            .withHeader("content-type", equalTo("application/json")))
+                            .withHeader("content-type", equalTo("application/json"))
+                            .withRequestBody(matchingJsonPath(s"$$.[?(@.auditSource == '${app.configuration.underlying.getString("auditSource")}')]"))
+    )
 
   private def verifyAuditEventWasNotForwarded(): Unit =
     wireMockServer.verify(0,
                           postRequestedFor(urlPathEqualTo("/write/audit"))
-                            .withHeader("content-type", equalTo("application/json")))
+                            .withHeader("content-type", equalTo("application/json"))
+                            .withRequestBody(matchingJsonPath(s"$$.[?(@.auditSource == '${app.configuration.underlying.getString("auditSource")}')]"))
+    )
 }
