@@ -17,16 +17,16 @@
 package uk.gov.hmrc.mobileaudit.config
 import com.google.inject.AbstractModule
 import com.google.inject.name.Names.named
-import javax.inject.Inject
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.mobileaudit.controllers.api.ApiAccess
+
+import javax.inject.Inject
 
 class GuiceModule @Inject() (environment: Environment, configuration: Configuration) extends AbstractModule {
 
   override def configure(): Unit = {
     bindConfigString("auditSource", "auditSource")
 
-    bind(classOf[ApiAccess]).toInstance(ApiAccess("PRIVATE"))
+    bind(classOf[String]).toInstance("CONTROLLED")
   }
 
   private def bindConfigString(
