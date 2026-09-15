@@ -37,7 +37,7 @@ class ApiDefinitionISpec extends BaseISpec {
       val accessConfigs = definition \ "api" \ "versions" \\ "access"
       accessConfigs.length should be > 0
       accessConfigs.foreach { accessConfig =>
-        (accessConfig \ "type").as[String] shouldBe "PRIVATE"
+        accessConfig.as[String] shouldBe "CONTROLLED"
       }
     }
   }

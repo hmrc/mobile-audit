@@ -1,7 +1,6 @@
-@import uk.gov.hmrc.mobileaudit.controllers.api.ApiAccess
 @import play.api.libs.json.Json
 
-@(apiAccess: ApiAccess)
+@(apiAccess: String)
 {
   "api":{
     "name":"Mobile Audit",
