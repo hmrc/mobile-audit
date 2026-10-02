@@ -2,14 +2,13 @@ import sbt._
 
 object AppDependencies {
 
-  private val playBootstrapVersion = "10.7.0"
-  private val playHmrcApiVersion   = "8.3.0"
+  private val playBootstrapVersion = "10.8.0"
+  private val playHmrcApiVersion   = "9.0.0"
   private val catsCore             = "2.13.0"
 
   private val flexmarkVersion   = "0.64.8"
-  private val wireMockVersion  = "2.21.0"
-  private val scalaMockVersion = "7.4.1"
-  private val refinedVersion   = "0.11.3"
+  private val scalaMockVersion = "7.5.5"
+  private val refinedVersion   = "0.11.4"
 
   val compile: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"   %% "play-hmrc-api-play-30"     % playHmrcApiVersion,
