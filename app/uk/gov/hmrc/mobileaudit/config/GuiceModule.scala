@@ -26,7 +26,7 @@ class GuiceModule @Inject() (environment: Environment, configuration: Configurat
   override def configure(): Unit = {
     bindConfigString("auditSource", "auditSource")
 
-    bind(classOf[String]).toInstance("CONTROLLED")
+    bind(classOf[String]).toInstance("INTERNAL")
   }
 
   private def bindConfigString(
