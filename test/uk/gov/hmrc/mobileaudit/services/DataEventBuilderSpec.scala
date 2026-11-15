@@ -24,7 +24,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mobileaudit.controllers.{DataEventBuilder, IncomingAuditEvent}
 
-import java.time.{Instant, ZonedDateTime}
+import java.time.{Duration, Instant, ZonedDateTime}
 
 class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactory with ScalaFutures with OptionValues {
   "when building a DataEvent" - {
@@ -34,7 +34,7 @@ class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactor
     val transactionNameKey = "transactionName"
 
     "and no tag for the path is provided" - {
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map("nino" -> "SOMENINO"))
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map("nino" -> "SOMENINO"), false)
       val dataEvent     = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
       "then the path tag should be set to the incoming audit type" in {
         dataEvent.tags.get(pathKey) shouldBe Some(incomingEvent.auditType)
@@ -43,7 +43,7 @@ class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactor
 
     "and a tag for the path is provided" - {
       val pathValue     = "path-value"
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, Some("path-value"), Map("nino" -> "SOMENINO"))
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, Some("path-value"), Map("nino" -> "SOMENINO"), false)
       val dataEvent     = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
 
       "then it should be copied to the DataEvent" in {
@@ -52,7 +52,7 @@ class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactor
     }
 
     "and no tag for the transactionName is provided" - {
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map("nino" -> "SOMENINO"))
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map("nino" -> "SOMENINO"), false)
       val dataEvent     = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
       "then the transactionName should be set to the default" in {
         dataEvent.tags.get(transactionNameKey) shouldBe Some(DataEventBuilder.defaultTransactionName)
@@ -63,7 +63,7 @@ class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactor
       val transactionNameValue = "transaction-name-value"
       val tags                 = Map(transactionNameKey -> transactionNameValue)
       val incomingEvent =
-        IncomingAuditEvent("audit-type", None, Some(transactionNameValue), None, Map("nino" -> "SOMENINO"))
+        IncomingAuditEvent("audit-type", None, Some(transactionNameValue), None, Map("nino" -> "SOMENINO"), false)
       val dataEvent = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
 
       "then it should be copied to the DataEvent" in {
@@ -74,7 +74,7 @@ class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactor
     "any nino in the detail section of the incoming event" - {
       val detail            = Map(ninoKey -> "bogus-nino-value")
       val expectedNinoValue = "expected-nino-value"
-      val incomingEvent     = IncomingAuditEvent("audit-type", None, None, None, detail)
+      val incomingEvent     = IncomingAuditEvent("audit-type", None, None, None, detail, false)
       val dataEvent         = buildEvent("audit-source", expectedNinoValue, incomingEvent, HeaderCarrier())
       "should be replaced with the nino value supplied to the buildEvent function" in {
         dataEvent.detail.get(ninoKey) shouldBe Some(expectedNinoValue)
@@ -82,7 +82,7 @@ class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactor
     }
 
     "and no generatedAt is provided" - {
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map())
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map(), false)
       val dataEvent = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
 
       "should default generatedAt to now" in {
@@ -93,12 +93,34 @@ class DataEventBuilderSpec extends AnyFreeSpecLike with Matchers with MockFactor
 
     "and generatedAt is provided" - {
       val generatedAt = ZonedDateTime.parse("2026-07-30T12:00:00.000Z")
-      val incomingEvent = IncomingAuditEvent("audit-type", Some(generatedAt), None, None, Map())
+      val incomingEvent = IncomingAuditEvent("audit-type", Some(generatedAt), None, None, Map(), false)
       val dataEvent = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
 
       "should it should be copied to the DataEvent" in {
         dataEvent.generatedAt shouldBe generatedAt.toInstant
       }
     }
+
+    "and device time is being used" - {
+      val generatedAt = ZonedDateTime.parse("2026-07-30T12:00:00.000Z")
+      val incomingEvent = IncomingAuditEvent("audit-type", Some(generatedAt), None, None, Map(), true)
+      val dataEvent = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
+
+      "should it be using the server time" in {
+        Duration.between(dataEvent.generatedAt, Instant.now()).abs().toMillis should be < 500L
+      }
+    }
+
+    "and device time is not being used" - {
+      val generatedAt = ZonedDateTime.parse("2026-07-30T12:00:00.000Z")
+      val incomingEvent = IncomingAuditEvent("audit-type", Some(generatedAt), None, None, Map(), false)
+      val dataEvent = buildEvent("audit-source", "nino-value", incomingEvent, HeaderCarrier())
+
+      "should it be using the server time" in {
+        dataEvent.generatedAt shouldBe generatedAt.toInstant
+      }
+    }
+
+
   }
 }

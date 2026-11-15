@@ -35,7 +35,8 @@ The NINO of the user who is logged-in to the app will be added to each audit mes
         "detail": {
           "extraDetail1": "value 1",
           "extraDetail2": "value 2"
-        }
+        },
+        "isDeviceTime": true
       },{
         "auditType": "externalAuditEvent",
         "generatedAt": "2019-03-05T11:03:30.825Z",
@@ -44,7 +45,8 @@ The NINO of the user who is logged-in to the app will be added to each audit mes
         "detail": {
           "extraDetail1": "value 1",
           "extraDetail2": "value 2"
-        }
+        },
+      "isDeviceTime": true
       }
   ]
 }

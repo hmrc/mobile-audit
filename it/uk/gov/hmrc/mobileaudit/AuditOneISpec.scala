@@ -47,7 +47,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val detail = Map("nino" -> testNino)
       val generatedAt = ZonedDateTime.now(clock)
 
-      val incomingEvent = IncomingAuditEvent(auditType, Some(generatedAt), None, None, detail)
+      val incomingEvent = IncomingAuditEvent(auditType, Some(generatedAt), None, None, detail, false)
 
       AuthStub.userIsLoggedIn(testNino)
       AuditStub.respondToAuditWithNoBody
@@ -74,7 +74,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val maliciousNIno = "OTHERNINO"
       val detail        = Map("nino" -> maliciousNIno)
 
-      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail)
+      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail, false)
 
       AuthStub.userIsLoggedIn(authNino)
       AuditStub.respondToAuditWithNoBody
@@ -101,7 +101,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val nino   = "AA100000X"
       val detail = Map("otherKey" -> nino)
 
-      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail)
+      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail, false)
 
       AuthStub.userIsLoggedIn(nino)
       AuditStub.respondToAuditWithNoBody
@@ -118,7 +118,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val nino   = "AA100000X"
       val detail = Map("otherKey" -> nino)
 
-      val incomingEvent = IncomingAuditEvent(s"$auditType-1", None, None, None, detail)
+      val incomingEvent = IncomingAuditEvent(s"$auditType-1", None, None, None, detail, false)
 
       AuthStub.userIsLoggedIn(nino)
       AuditStub.respondToAuditWithNoBody
@@ -135,7 +135,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val nino   = "AA100000X"
       val detail = Map("nino" -> nino)
 
-      val incomingEvent = IncomingAuditEvent(s"$auditType-1", None, None, None, detail)
+      val incomingEvent = IncomingAuditEvent(s"$auditType-1", None, None, None, detail, false)
 
       AuthStub.userLogInThrowsUnknownError()
       AuditStub.respondToAuditMergedWithNoBody
@@ -152,7 +152,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val testNino = "AA100000Z"
       val detail   = Map("nino" -> testNino)
 
-      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail)
+      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail, false)
 
       AuthStub.userIsLoggedIn(testNino)
       AuditStub.respondToAuditWithNoBody
@@ -168,7 +168,7 @@ class AuditOneISpec extends BaseISpec with OptionValues {
       val testNino = "AA100000Z"
       val detail   = Map("nino" -> testNino)
 
-      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail)
+      val incomingEvent = IncomingAuditEvent(auditType, None, None, None, detail, false)
 
       AuthStub.userIsLoggedIn(testNino)
       AuditStub.respondToAuditWithNoBody
