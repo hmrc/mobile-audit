@@ -25,7 +25,7 @@ case class IncomingAuditEvent(auditType: String,
                               transactionName: Option[String],
                               path: Option[String],
                               detail: Map[String, String],
-                              isDeviceTime: Boolean
+                              isDeviceTime: Option[Boolean]
                              )
 
 object IncomingAuditEvent {

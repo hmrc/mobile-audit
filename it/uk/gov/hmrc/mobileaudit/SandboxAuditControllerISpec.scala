@@ -31,7 +31,7 @@ class SandboxAuditControllerISpec extends BaseISpec {
 
   "This integration test" - {
     "call the sandbox controller for /audit-event" in {
-      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map("nino" -> "CS700100A"), false)
+      val incomingEvent = IncomingAuditEvent("audit-type", None, None, None, Map("nino" -> "CS700100A"), None)
 
       val response = await(wsUrl(auditEventUrl).addHttpHeaders(mobileHeader).post(Json.toJson(incomingEvent)))
       response.status shouldBe 204
@@ -39,7 +39,7 @@ class SandboxAuditControllerISpec extends BaseISpec {
 
     "call the sandbox controller for /audit-events" in {
       val incomingEvent = IncomingAuditEvents(events =
-        List(IncomingAuditEvent("audit-type", None, None, None, Map("nino" -> "CS700100A"), false))
+        List(IncomingAuditEvent("audit-type", None, None, None, Map("nino" -> "CS700100A"), None))
       )
       val response = await(wsUrl(auditEventsUrl).addHttpHeaders(mobileHeader).post(Json.toJson(incomingEvent)))
       response.status shouldBe 204

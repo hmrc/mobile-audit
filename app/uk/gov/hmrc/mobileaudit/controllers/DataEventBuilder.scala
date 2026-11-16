@@ -50,7 +50,7 @@ object DataEventBuilder {
   }
 
   private def generatedAtValue(incomingEvent: IncomingAuditEvent): Instant =
-    if (incomingEvent.isDeviceTime)
+    if (incomingEvent.isDeviceTime.contains(true))
       Instant.now()
     else
       incomingEvent.generatedAt.map(_.toInstant).getOrElse(Instant.now())
