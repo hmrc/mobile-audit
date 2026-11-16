@@ -34,7 +34,7 @@ object DataEventBuilder {
     val transactionName: String = incomingEvent.transactionName.getOrElse(defaultTransactionName)
     val path: String = incomingEvent.path.getOrElse(incomingEvent.auditType)
     val detail = incomingEvent.detail
-    val generatedAt = incomingEvent.generatedAt.map(_.toInstant).getOrElse(Instant.now())
+    val generatedAt = generatedAtValue(incomingEvent)
 
     DataEvent(
       auditSource,
@@ -48,4 +48,10 @@ object DataEventBuilder {
       detail = hc.toAuditDetails((detail ++ Map(ninoKey -> nino)).toList*)
     )
   }
+
+  private def generatedAtValue(incomingEvent: IncomingAuditEvent): Instant =
+    if (incomingEvent.isDeviceTime.contains(true))
+      Instant.now()
+    else
+      incomingEvent.generatedAt.map(_.toInstant).getOrElse(Instant.now())
 }

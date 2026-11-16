@@ -34,7 +34,8 @@ to the platform audit service.
   "detail": {
     "extraDetail1": "value 1",
     "extraDetail2": "value 2"
-  }
+  },
+  "isDeviceTime": true
 }
 ```
 

@@ -44,7 +44,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val generatedAt = ZonedDateTime.now(clock)
 
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", Some(generatedAt), None, None, detail)
+        IncomingAuditEvent(s"$auditType-$i", Some(generatedAt), None, None, detail, None)
       }.toList
 
       val auditSource = app.configuration.underlying.getString("auditSource")
@@ -90,7 +90,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val detail = Map("nino" -> maliciousNIno)
 
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail, None)
       }.toList
 
       AuthStub.userIsLoggedIn(authNino)
@@ -120,7 +120,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val detail = Map("otherKey" -> maliciousNIno)
 
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail, None)
       }.toList
 
       AuthStub.userIsLoggedIn(authNino)
@@ -152,7 +152,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val auditType = "audit-type"
 
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail, None)
       }.toList
 
       AuthStub.userIsLoggedIn(authNino)
@@ -171,7 +171,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val detail   = Map("nino" -> testNino)
 
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail, None)
       }.toList
 
       AuthStub.userIsLoggedIn(testNino)
@@ -191,7 +191,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val detail = Map("nino" -> authNino)
 
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail, None)
       }.toList
 
       AuthStub.userIsNotLoggedIn()
@@ -219,7 +219,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val detail = Map("nino" -> authNino)
 
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail, None)
       }.toList
 
       AuthStub.userIsLoggedInWithInsufficientConfidenceLevel()
@@ -252,7 +252,7 @@ class AuditManyISpec extends BaseISpec with OptionValues {
       val detail = Map("nino" -> authNino)
 
       val incomingEvents = (0 to 3).map { i =>
-        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail)
+        IncomingAuditEvent(s"$auditType-$i", None, None, None, detail, None)
       }.toList
 
       AuthStub.userLogInThrowsUnknownError()
